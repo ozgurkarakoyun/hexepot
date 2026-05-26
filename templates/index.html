@@ -3,826 +3,774 @@
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Hexapod Fiksatör — TSF</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#080c15;--bg2:#0d1525;--bg3:#0f1c30;
-  --border:#1a2a4a;--border2:#253a5a;
-  --text:#e0eaff;--text2:#8fa0b3;--text3:#4a6a9e;
-  --blue:#4a9eff;--green:#4aff9e;--orange:#ff6b4a;--amber:#ffaa4a;
+  --b:#1a2a4a;--b2:#253a5a;
+  --tx:#e0eaff;--tx2:#8fa0b3;--tx3:#4a6a9e;
+  --bl:#4a9eff;--gr:#4aff9e;--or:#ff6b4a;--am:#ffaa4a;
   --s1:#4a9eff;--s2:#7ac0ff;--s3:#ff6b4a;--s4:#ffaa4a;--s5:#4aff9e;--s6:#4affce;
-  --tab1:#4a9eff;--tab2:#ff6b4a;--tab3:#4aff9e;
+  --tc1:#4a9eff;--tc2:#ff6b4a;--tc3:#4aff9e;
 }
 html,body{height:100%;overflow:hidden}
-body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:13px;display:flex;flex-direction:column}
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-track{background:var(--bg)}
-::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;font-size:13px;display:flex;flex-direction:column}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--b2);border-radius:3px}
 
-/* ── NAVBAR ── */
-#navbar{height:50px;background:rgba(8,12,21,.97);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:16px;flex-shrink:0;z-index:100}
-.logo{font-family:'Orbitron',sans-serif;font-size:14px;font-weight:900;color:var(--blue);letter-spacing:3px;white-space:nowrap;line-height:1.1}
-.logo span{color:var(--green);font-size:8px;display:block;letter-spacing:4px;margin-top:2px}
-.nav-pills{flex:1;display:flex;justify-content:center;gap:4px}
-.npill{padding:5px 16px;background:transparent;border:1px solid var(--border);color:var(--text3);font-family:'Share Tech Mono';font-size:10px;letter-spacing:2px;cursor:pointer;border-radius:20px;transition:all .2s}
-.npill:hover,.npill.active{border-color:var(--blue);color:var(--blue);background:rgba(74,158,255,.08)}
-.nav-right{font-family:'Share Tech Mono';font-size:9px;color:var(--text3);display:flex;align-items:center;gap:8px}
-.sdot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 5px var(--green)}
+/* NAVBAR */
+#nav{height:50px;background:rgba(8,12,21,.97);border-bottom:1px solid var(--b);display:flex;align-items:center;padding:0 18px;gap:14px;flex-shrink:0}
+.logo{font-family:'Orbitron';font-size:14px;font-weight:900;color:var(--bl);letter-spacing:3px;line-height:1.1}
+.logo small{color:var(--gr);font-size:8px;display:block;letter-spacing:4px;margin-top:2px}
+.npills{flex:1;display:flex;justify-content:center;gap:4px}
+.np{padding:5px 16px;background:transparent;border:1px solid var(--b);color:var(--tx3);font-family:'Share Tech Mono';font-size:10px;letter-spacing:2px;cursor:pointer;border-radius:20px;transition:all .2s}
+.np:hover,.np.on{border-color:var(--bl);color:var(--bl);background:rgba(74,158,255,.08)}
+.nright{font-family:'Share Tech Mono';font-size:9px;color:var(--tx3);display:flex;align-items:center;gap:8px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--gr);box-shadow:0 0 5px var(--gr)}
 
-/* ── LAYOUT ── */
+/* LAYOUT */
 #main{display:flex;flex:1;overflow:hidden}
-#sidebar{width:220px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;padding:10px 8px;display:flex;flex-direction:column;gap:8px}
-#content{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#sb{width:218px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--b);overflow-y:auto;padding:10px 8px;display:flex;flex-direction:column;gap:7px}
+#ct{flex:1;display:flex;flex-direction:column;overflow:hidden}
 
-/* ── SIDEBAR COMPONENTS ── */
-.scard{border:1px solid var(--border);border-radius:6px;overflow:hidden}
-.scard-title{padding:6px 10px;font-family:'Share Tech Mono';font-size:9px;letter-spacing:3px;color:var(--green);background:rgba(74,255,158,.03);border-bottom:1px solid var(--border)}
-.scard-body{padding:8px}
-.size-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
-.sbtn{padding:8px 4px;background:transparent;border:1px solid var(--border);color:var(--text3);font-family:'Share Tech Mono';font-size:12px;cursor:pointer;border-radius:4px;transition:all .15s;text-align:center}
-.sbtn:hover{border-color:var(--blue);color:var(--blue)}
-.sbtn.active{background:rgba(74,158,255,.1);border-color:var(--blue);color:var(--blue)}
-.type-row{display:flex;gap:4px}
-.tbtn{flex:1;padding:6px 4px;background:transparent;border:1px solid var(--border);color:var(--text3);font-family:'Share Tech Mono';font-size:10px;cursor:pointer;border-radius:4px;transition:all .15s;text-align:center}
-.tbtn.active.prox{border-color:var(--blue);color:var(--blue);background:rgba(74,158,255,.08)}
-.tbtn.active.dist{border-color:var(--green);color:var(--green);background:rgba(74,255,158,.06)}
-.irow{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(26,42,74,.4);font-size:11px}
-.irow:last-child{border-bottom:none}
-.irow .lbl{color:var(--text3)}.irow .val{color:var(--text);font-family:'Share Tech Mono'}
-.xbtn{width:100%;padding:7px;margin-bottom:4px;background:transparent;border:1px solid var(--border);color:var(--text2);font-family:'Share Tech Mono';font-size:10px;cursor:pointer;border-radius:4px;transition:all .2s;text-align:left;display:flex;align-items:center;gap:6px}
-.xbtn:hover{border-color:var(--blue);color:var(--blue)}
-.xbtn:last-child{margin-bottom:0}
-.strut-legend{display:flex;flex-direction:column;gap:3px}
-.sl-row{display:flex;align-items:center;gap:6px;font-family:'Share Tech Mono';font-size:9px}
-.sl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+/* SIDEBAR */
+.sc{border:1px solid var(--b);border-radius:6px;overflow:hidden}
+.sc h4{padding:6px 10px;font-family:'Share Tech Mono';font-size:9px;letter-spacing:3px;color:var(--gr);background:rgba(74,255,158,.03);border-bottom:1px solid var(--b)}
+.sc-b{padding:8px}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.sb2{padding:8px 4px;background:transparent;border:1px solid var(--b);color:var(--tx3);font-family:'Share Tech Mono';font-size:12px;cursor:pointer;border-radius:4px;transition:all .15s;text-align:center}
+.sb2:hover{border-color:var(--bl);color:var(--bl)}
+.sb2.on{background:rgba(74,158,255,.1);border-color:var(--bl);color:var(--bl)}
+.tr{display:flex;gap:4px}
+.tb2{flex:1;padding:6px 4px;background:transparent;border:1px solid var(--b);color:var(--tx3);font-family:'Share Tech Mono';font-size:10px;cursor:pointer;border-radius:4px;transition:all .15s;text-align:center}
+.tb2.on.px{border-color:var(--bl);color:var(--bl);background:rgba(74,158,255,.08)}
+.tb2.on.ds{border-color:var(--gr);color:var(--gr);background:rgba(74,255,158,.06)}
+.ir{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(26,42,74,.4);font-size:11px}
+.ir:last-child{border-bottom:none}
+.ir .l{color:var(--tx3)}.ir .v{color:var(--tx);font-family:'Share Tech Mono'}
+.xb{width:100%;padding:7px;margin-bottom:4px;background:transparent;border:1px solid var(--b);color:var(--tx2);font-family:'Share Tech Mono';font-size:10px;cursor:pointer;border-radius:4px;transition:all .2s;text-align:left}
+.xb:hover{border-color:var(--bl);color:var(--bl)}.xb:last-child{margin-bottom:0}
+.sl{display:flex;flex-direction:column;gap:3px}
+.sl-r{display:flex;align-items:center;gap:6px;font-family:'Share Tech Mono';font-size:9px}
+.sd{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 
-/* ── TABBAR ── */
-#tabbar{height:36px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:flex-end;padding:0 10px;gap:2px;flex-shrink:0}
-.tabbtn{padding:6px 14px;background:transparent;border:1px solid transparent;border-bottom:none;color:var(--text3);font-family:'Share Tech Mono';font-size:10px;letter-spacing:2px;cursor:pointer;border-radius:4px 4px 0 0;transition:all .15s;white-space:nowrap}
-.tabbtn:hover{color:var(--text2)}
-.tabbtn.active{background:var(--bg2);border-color:var(--border);color:var(--text);border-bottom-color:var(--bg2)}
-.tabbtn.corrtab.active{color:var(--green);border-color:var(--green);border-bottom-color:var(--bg2)}
+/* TABBAR */
+#tbar{height:36px;background:var(--bg);border-bottom:1px solid var(--b);display:flex;align-items:flex-end;padding:0 10px;gap:2px;flex-shrink:0}
+.tb{padding:6px 14px;background:transparent;border:1px solid transparent;border-bottom:none;color:var(--tx3);font-family:'Share Tech Mono';font-size:10px;letter-spacing:2px;cursor:pointer;border-radius:4px 4px 0 0;transition:all .15s;white-space:nowrap}
+.tb:hover{color:var(--tx2)}.tb.on{background:var(--bg2);border-color:var(--b);color:var(--tx);border-bottom-color:var(--bg2)}
+.tb.cx.on{color:var(--gr);border-color:var(--gr);border-bottom-color:var(--bg2)}
 
-/* ── PANELS ── */
-#panels{flex:1;overflow:hidden;background:var(--bg2)}
-.panel{display:none;height:100%;padding:14px;overflow:auto;flex-direction:column}
-.panel.active{display:flex}
+/* PANELS */
+#pn{flex:1;overflow:hidden;background:var(--bg2)}
+.pan{display:none;height:100%;padding:14px;overflow:auto;flex-direction:column}
+.pan.on{display:flex}
 
-/* ── 2D RING VIEW ── */
-#ring-layout{flex:1;display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;justify-content:center}
-#ring-wrap{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px}
-#ring-info-col{min-width:230px;flex:1;display:flex;flex-direction:column;gap:10px;max-width:340px}
-.info-card{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px}
-.card-title{font-family:'Share Tech Mono';font-size:9px;letter-spacing:3px;color:var(--green);margin-bottom:10px}
-.ctable{width:100%;border-collapse:collapse;font-family:'Share Tech Mono';font-size:11px}
-.ctable th{color:var(--text3);text-align:left;padding:4px 6px;border-bottom:1px solid var(--border);font-size:9px;letter-spacing:1px}
-.ctable td{padding:4px 6px;border-bottom:1px solid rgba(26,42,74,.35)}
-.tab-badge{display:inline-block;padding:1px 6px;border-radius:3px;font-size:9px;font-family:'Share Tech Mono';border:1px solid}
+/* 2D */
+#rl{flex:1;display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;justify-content:center}
+#rw{background:var(--bg);border:1px solid var(--b);border-radius:8px;padding:10px}
+#rc{min-width:230px;flex:1;display:flex;flex-direction:column;gap:10px;max-width:340px}
+.ic{background:var(--bg);border:1px solid var(--b);border-radius:6px;padding:12px}
+.ic h5{font-family:'Share Tech Mono';font-size:9px;letter-spacing:3px;color:var(--gr);margin-bottom:10px}
+.ct{width:100%;border-collapse:collapse;font-family:'Share Tech Mono';font-size:11px}
+.ct th{color:var(--tx3);text-align:left;padding:4px 6px;border-bottom:1px solid var(--b);font-size:9px;letter-spacing:1px}
+.ct td{padding:4px 6px;border-bottom:1px solid rgba(26,42,74,.3)}
+.dir-badge{display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:10px;font-size:9px;font-family:'Share Tech Mono';border:1px solid;margin-bottom:4px}
 
-/* ── 3D ── */
-#v3d-wrap{flex:1;display:flex;flex-direction:column}
-#v3d-controls{display:flex;align-items:center;gap:14px;margin-bottom:8px;flex-wrap:wrap}
-#v3d-box{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;overflow:hidden;cursor:grab;min-height:400px}
-.sep-ctl{display:flex;align-items:center;gap:8px}
-.sep-ctl label{font-family:'Share Tech Mono';font-size:10px;color:var(--text3);white-space:nowrap}
-input[type=range]{accent-color:var(--blue);cursor:pointer}
-.sepval{font-family:'Share Tech Mono';font-size:13px;color:var(--blue);min-width:52px}
-.leg3d{display:flex;gap:10px;flex-wrap:wrap}
-.l3item{display:flex;align-items:center;gap:5px;font-family:'Share Tech Mono';font-size:9px}
+/* 3D */
+#v3{flex:1;display:flex;flex-direction:column}
+#v3c{display:flex;align-items:center;gap:12px;margin-bottom:8px;flex-wrap:wrap}
+#v3b{flex:1;background:var(--bg);border:1px solid var(--b);border-radius:8px;overflow:hidden;cursor:grab;min-height:400px}
+.sc2{display:flex;align-items:center;gap:8px}
+.sc2 label{font-family:'Share Tech Mono';font-size:10px;color:var(--tx3);white-space:nowrap}
+input[type=range]{accent-color:var(--bl);cursor:pointer}
+.sv{font-family:'Share Tech Mono';font-size:13px;color:var(--bl);min-width:52px}
 
-/* ── ALL RINGS ── */
-#allgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
-.rcard{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;cursor:pointer;transition:all .2s}
-.rcard:hover{border-color:var(--blue);transform:translateY(-2px)}
-.rcard-title{font-family:'Share Tech Mono';font-size:10px;color:var(--green);letter-spacing:2px;margin-bottom:6px}
-.rcard-info{font-size:10px;color:var(--text3);margin-top:5px;font-family:'Share Tech Mono'}
+/* Coord table */
+#cw{overflow:auto;flex:1}
+.mt{width:100%;border-collapse:collapse;font-family:'Share Tech Mono';font-size:11px}
+.mt th{background:var(--bg);color:var(--tx3);padding:7px 10px;border:1px solid var(--b);font-size:9px;letter-spacing:1px;position:sticky;top:0;z-index:1}
+.mt td{padding:6px 10px;border:1px solid rgba(26,42,74,.3)}
+.mt tr:hover td{background:rgba(74,158,255,.04)}
 
-/* ── COORD TABLE ── */
-#coord-wrap{overflow:auto;flex:1}
-.mtable{width:100%;border-collapse:collapse;font-family:'Share Tech Mono';font-size:11px}
-.mtable th{background:var(--bg);color:var(--text3);padding:7px 10px;border:1px solid var(--border);font-size:9px;letter-spacing:1px;position:sticky;top:0;z-index:1}
-.mtable td{padding:6px 10px;border:1px solid rgba(26,42,74,.3)}
-.mtable tr:hover td{background:rgba(74,158,255,.04)}
-
-/* ── CORRECTION ── */
+/* CORRECTION */
 #cl{display:flex;gap:12px;flex:1;overflow:hidden}
-#cf{width:232px;flex-shrink:0;overflow-y:auto;display:flex;flex-direction:column;gap:7px}
-.fsec{background:var(--bg);border:1px solid var(--border);border-radius:6px;overflow:hidden}
-.fsec-title{padding:5px 9px;font-family:'Share Tech Mono';font-size:9px;letter-spacing:3px;color:var(--green);background:rgba(74,255,158,.03);border-bottom:1px solid var(--border)}
-.fgrid{display:grid;grid-template-columns:auto 1fr;gap:5px 7px;padding:8px 9px;align-items:center}
-.fgrid label{font-family:'Share Tech Mono';font-size:10px;color:var(--text3);white-space:nowrap}
-.fgrid input,.fgrid select{background:var(--bg2);border:1px solid var(--border);color:var(--text);font-family:'Share Tech Mono';font-size:11px;padding:4px 5px;border-radius:3px;width:100%;transition:border-color .2s}
-.fgrid input:focus,.fgrid select:focus{outline:none;border-color:var(--blue)}
+#cf{width:242px;flex-shrink:0;overflow-y:auto;display:flex;flex-direction:column;gap:7px}
+.fs{background:var(--bg);border:1px solid var(--b);border-radius:6px;overflow:hidden}
+.fs h4{padding:5px 9px;font-family:'Share Tech Mono';font-size:9px;letter-spacing:3px;color:var(--gr);background:rgba(74,255,158,.03);border-bottom:1px solid var(--b)}
+.fg{display:grid;grid-template-columns:auto 1fr;gap:5px 6px;padding:8px 9px;align-items:center}
+.fg label{font-family:'Share Tech Mono';font-size:10px;color:var(--tx3);white-space:nowrap}
+.fg input,.fg select{background:var(--bg2);border:1px solid var(--b);color:var(--tx);font-family:'Share Tech Mono';font-size:11px;padding:4px 5px;border-radius:3px;width:100%}
+.fg input:focus,.fg select:focus{outline:none;border-color:var(--bl)}
 
-/* Initial lengths grid */
-.il-grid{display:grid;grid-template-columns:auto 1fr auto;gap:4px 6px;padding:7px 9px;align-items:center}
-.il-grid label{font-family:'Share Tech Mono';font-size:10px;white-space:nowrap}
-.il-grid input{background:var(--bg2);border:1px solid var(--border);color:var(--text);font-family:'Share Tech Mono';font-size:11px;padding:4px 5px;border-radius:3px;width:100%;transition:border-color .2s}
-.il-grid input:focus{outline:none}
-.il-unit{font-family:'Share Tech Mono';font-size:9px;color:var(--text3)}
-.auto-btn{width:100%;padding:6px;background:transparent;border:1px solid var(--border2);color:var(--text3);font-family:'Share Tech Mono';font-size:9px;cursor:pointer;border-radius:3px;letter-spacing:2px;transition:all .2s;margin-top:4px}
-.auto-btn:hover{border-color:var(--amber);color:var(--amber)}
+/* Initial lengths */
+.ilg{display:grid;grid-template-columns:auto 1fr auto;gap:4px 5px;padding:7px 9px;align-items:center}
+.ilg label{font-family:'Share Tech Mono';font-size:10px;white-space:nowrap}
+.ilg input{background:var(--bg2);border:1px solid var(--b);color:var(--tx);font-family:'Share Tech Mono';font-size:11px;padding:4px 5px;border-radius:3px;width:100%}
+.ilg input:focus{outline:none}
+.ilu{font-family:'Share Tech Mono';font-size:9px;color:var(--tx3)}
+.auto{width:100%;padding:6px;background:transparent;border:1px solid var(--b2);color:var(--am);font-family:'Share Tech Mono';font-size:9px;cursor:pointer;border-radius:3px;letter-spacing:2px;transition:all .2s;margin-top:3px}
+.auto:hover{border-color:var(--am);background:rgba(255,170,74,.06)}
 
-.calc-btn{width:100%;padding:10px;background:transparent;border:1px solid var(--green);color:var(--green);font-family:'Share Tech Mono';font-size:12px;letter-spacing:3px;cursor:pointer;border-radius:5px;transition:all .2s}
-.calc-btn:hover{background:rgba(74,255,158,.07)}
-.csvbtn{width:100%;padding:7px;background:transparent;border:1px solid var(--border);color:var(--text3);font-family:'Share Tech Mono';font-size:10px;letter-spacing:2px;cursor:pointer;border-radius:4px;transition:all .2s;display:none}
-.csvbtn:hover{border-color:var(--blue);color:var(--blue)}
+.calcb{width:100%;padding:10px;background:transparent;border:1px solid var(--gr);color:var(--gr);font-family:'Share Tech Mono';font-size:12px;letter-spacing:3px;cursor:pointer;border-radius:5px;transition:all .2s}
+.calcb:hover{background:rgba(74,255,158,.07)}
+.csvb{width:100%;padding:7px;background:transparent;border:1px solid var(--b);color:var(--tx3);font-family:'Share Tech Mono';font-size:10px;letter-spacing:2px;cursor:pointer;border-radius:4px;transition:all .2s;display:none}
+.csvb:hover{border-color:var(--bl);color:var(--bl)}
 
 /* Results */
 #cr{flex:1;display:flex;flex-direction:column;gap:9px;overflow:hidden;min-width:0}
-#csummary{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px;flex-shrink:0}
-#csumtext{font-family:'Share Tech Mono';font-size:10px;color:var(--text2);line-height:1.7}
-#strut-cards{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:8px}
-.sc{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:5px 3px;text-align:center;font-family:'Share Tech Mono';font-size:10px}
-.sc-id{font-size:11px;font-weight:bold;margin-bottom:2px}
-.sc-row{font-size:9px;color:var(--text3);display:flex;justify-content:space-between;padding:1px 4px}
-.sc-row .v{color:var(--text)}
-.sc-delta{font-size:11px;margin-top:3px}
-.sc-delta.pos{color:var(--green)}.sc-delta.neg{color:var(--orange)}
-#ctabs-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);border:1px solid var(--border);border-radius:6px;overflow:hidden}
-.mini-bar{display:flex;gap:2px;padding:4px 6px 0;border-bottom:1px solid var(--border);flex-shrink:0}
-.mtab{padding:5px 12px;background:transparent;border:1px solid transparent;color:var(--text3);font-family:'Share Tech Mono';font-size:10px;letter-spacing:2px;cursor:pointer;border-radius:4px 4px 0 0;transition:all .15s}
-.mtab.active{background:var(--bg2);border-color:var(--border);color:var(--text);border-bottom-color:var(--bg2)}
-.mpanel{display:none;overflow:auto;padding:6px}
-.mpanel.active{display:block;flex:1}
-#chart-box{height:300px;padding:8px}
+#cs{background:var(--bg);border:1px solid var(--b);border-radius:6px;padding:10px;flex-shrink:0}
+#cst{font-family:'Share Tech Mono';font-size:10px;color:var(--tx2);line-height:1.7}
+#scc{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:8px}
+.scard{background:var(--bg2);border:1px solid var(--b);border-radius:4px;padding:5px 3px;text-align:center;font-family:'Share Tech Mono';font-size:10px}
+.scard-id{font-size:11px;font-weight:bold;margin-bottom:2px}
+.scard-r{font-size:9px;color:var(--tx3);display:flex;justify-content:space-between;padding:0 4px}
+.scard-r .v{color:var(--tx)}
+.scard-d{font-size:11px;margin-top:3px}
+.scard-d.p{color:var(--gr)}.scard-d.n{color:var(--or)}
+#rtw{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);border:1px solid var(--b);border-radius:6px}
+.mbar{display:flex;gap:2px;padding:4px 6px 0;border-bottom:1px solid var(--b);flex-shrink:0}
+.mt2{padding:5px 12px;background:transparent;border:1px solid transparent;color:var(--tx3);font-family:'Share Tech Mono';font-size:10px;letter-spacing:2px;cursor:pointer;border-radius:4px 4px 0 0;transition:all .15s}
+.mt2.on{background:var(--bg2);border-color:var(--b);color:var(--tx);border-bottom-color:var(--bg2)}
+.mpan{display:none;overflow:auto;padding:6px}
+.mpan.on{display:block;flex:1}
+#chb{height:300px;padding:8px}
 
-/* ── STATUS BAR ── */
-#sbar{height:22px;background:var(--bg);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:18px;font-family:'Share Tech Mono';font-size:9px;color:var(--text3);flex-shrink:0}
-#smsg{color:var(--blue)!important;opacity:1!important}
+/* STATUS */
+#sbar{height:22px;background:var(--bg);border-top:1px solid var(--b);display:flex;align-items:center;padding:0 12px;gap:18px;font-family:'Share Tech Mono';font-size:9px;color:var(--tx3);flex-shrink:0}
+#smsg{color:var(--bl)!important}
 
-/* ── LOADING ── */
-#loading{display:none;position:fixed;inset:0;background:rgba(8,12,21,.75);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:10px;font-family:'Share Tech Mono';font-size:12px;color:var(--blue);letter-spacing:3px}
-#loading.show{display:flex}
-.spin{width:30px;height:30px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:sp .8s linear infinite}
+/* LOADING */
+#load{display:none;position:fixed;inset:0;background:rgba(8,12,21,.75);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:10px;font-family:'Share Tech Mono';font-size:12px;color:var(--bl);letter-spacing:3px}
+#load.on{display:flex}
+.spn{width:30px;height:30px;border:2px solid var(--b);border-top-color:var(--bl);border-radius:50%;animation:sp .8s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
-<div id="loading"><div class="spin"></div><span>HESAPLANIYOR...</span></div>
+<div id="load"><div class="spn"></div><span>HESAPLANIYOR...</span></div>
 
-<!-- NAVBAR -->
-<nav id="navbar">
-  <div class="logo">HEXAPOD FİKSATÖR<span>TAYLOR SPATIAL FRAME</span></div>
-  <div class="nav-pills">
-    <button class="npill active" onclick="goNav('ring')">HALKA TASARIMI</button>
-    <button class="npill" onclick="goNav('corr')">DÜZELTME PROGRAMI</button>
+<nav id="nav">
+  <div class="logo">HEXAPOD FİKSATÖR<small>TAYLOR SPATIAL FRAME</small></div>
+  <div class="npills">
+    <button class="np on" onclick="goNav('ring')">HALKA TASARIMI</button>
+    <button class="np"    onclick="goNav('corr')">DÜZELTME PROGRAMI</button>
   </div>
-  <div class="nav-right"><div class="sdot"></div><span>TSF Standart</span></div>
+  <div class="nright"><div class="dot"></div><span>TSF Standart • Tab1 Anterior</span></div>
 </nav>
 
 <div id="main">
-<!-- SIDEBAR -->
-<aside id="sidebar">
-  <div class="scard">
-    <div class="scard-title">HALKA BOYUTU</div>
-    <div class="scard-body">
-      <div class="size-grid">
-        <button class="sbtn" onclick="setSize(120)">Ø120</button>
-        <button class="sbtn active" onclick="setSize(150)">Ø150</button>
-        <button class="sbtn" onclick="setSize(180)">Ø180</button>
-        <button class="sbtn" onclick="setSize(210)">Ø210</button>
+<aside id="sb">
+  <div class="sc">
+    <h4>HALKA BOYUTU</h4>
+    <div class="sc-b"><div class="sg">
+      <button class="sb2"    onclick="setSize(120)">Ø120</button>
+      <button class="sb2 on" onclick="setSize(150)">Ø150</button>
+      <button class="sb2"    onclick="setSize(180)">Ø180</button>
+      <button class="sb2"    onclick="setSize(210)">Ø210</button>
+    </div></div>
+  </div>
+  <div class="sc">
+    <h4>HALKA TİPİ</h4>
+    <div class="sc-b"><div class="tr">
+      <button class="tb2 px on" onclick="setType('proximal')">Proksimal</button>
+      <button class="tb2 ds"    onclick="setType('distal')">Distal</button>
+    </div></div>
+  </div>
+  <div class="sc">
+    <h4>HALKA BİLGİSİ</h4>
+    <div class="sc-b">
+      <div class="ir"><span class="l">İç Çap</span><span class="v" id="sb-i">150 mm</span></div>
+      <div class="ir"><span class="l">Dış Çap</span><span class="v" id="sb-o">180 mm</span></div>
+      <div class="ir"><span class="l">Genişlik</span><span class="v">15 mm</span></div>
+      <div class="ir"><span class="l">Yükseklik</span><span class="v">8 mm</span></div>
+      <div class="ir"><span class="l">Merkez R</span><span class="v" id="sb-r">82.5 mm</span></div>
+      <div class="ir"><span class="l">Delik Ø</span><span class="v">7 mm</span></div>
+    </div>
+  </div>
+  <div class="sc">
+    <h4>STRUT / TAB LEGENDİ</h4>
+    <div class="sc-b">
+      <div style="font-family:'Share Tech Mono';font-size:9px;color:var(--tx3);margin-bottom:6px;line-height:1.8">
+        <span style="color:var(--tc1)">▬ Tab1</span> Anterior (0°)<br>
+        <span style="color:var(--tc2)">▬ Tab2</span> Post-Med (120°)<br>
+        <span style="color:var(--tc3)">▬ Tab3</span> Post-Lat (240°)
+      </div>
+      <div class="sl">
+        <div class="sl-r"><div class="sd" style="background:var(--s1)"></div><span style="color:var(--s1)">S1</span><span style="color:var(--tx3)"> P:Tab1 → D:Tab1</span></div>
+        <div class="sl-r"><div class="sd" style="background:var(--s2)"></div><span style="color:var(--s2)">S2</span><span style="color:var(--tx3)"> P:Tab1 → D:Tab2</span></div>
+        <div class="sl-r"><div class="sd" style="background:var(--s3)"></div><span style="color:var(--s3)">S3</span><span style="color:var(--tx3)"> P:Tab2 → D:Tab2</span></div>
+        <div class="sl-r"><div class="sd" style="background:var(--s4)"></div><span style="color:var(--s4)">S4</span><span style="color:var(--tx3)"> P:Tab2 → D:Tab3</span></div>
+        <div class="sl-r"><div class="sd" style="background:var(--s5)"></div><span style="color:var(--s5)">S5</span><span style="color:var(--tx3)"> P:Tab3 → D:Tab3</span></div>
+        <div class="sl-r"><div class="sd" style="background:var(--s6)"></div><span style="color:var(--s6)">S6</span><span style="color:var(--tx3)"> P:Tab3 → D:Tab1</span></div>
       </div>
     </div>
   </div>
-  <div class="scard">
-    <div class="scard-title">HALKA TİPİ</div>
-    <div class="scard-body">
-      <div class="type-row">
-        <button class="tbtn prox active" onclick="setType('proximal')">Proksimal</button>
-        <button class="tbtn dist"        onclick="setType('distal')">Distal</button>
-      </div>
-    </div>
-  </div>
-  <div class="scard">
-    <div class="scard-title">HALKA BİLGİSİ</div>
-    <div class="scard-body">
-      <div class="irow"><span class="lbl">İç Çap</span><span class="val" id="sb-inner">150 mm</span></div>
-      <div class="irow"><span class="lbl">Dış Çap</span><span class="val" id="sb-outer">180 mm</span></div>
-      <div class="irow"><span class="lbl">Genişlik</span><span class="val">15 mm</span></div>
-      <div class="irow"><span class="lbl">Yükseklik</span><span class="val">8 mm</span></div>
-      <div class="irow"><span class="lbl">Merkez R</span><span class="val" id="sb-midr">82.5 mm</span></div>
-      <div class="irow"><span class="lbl">Delik Çapı</span><span class="val">Ø7 mm</span></div>
-    </div>
-  </div>
-  <div class="scard">
-    <div class="scard-title">STRUT RENK KODLARI</div>
-    <div class="scard-body">
-      <div class="strut-legend">
-        <div class="sl-row"><div class="sl-dot" style="background:var(--s1)"></div><span style="color:var(--s1)">S1</span><span style="color:var(--text3);margin-left:4px">Proks Tab1 · Dist Tab1</span></div>
-        <div class="sl-row"><div class="sl-dot" style="background:var(--s2)"></div><span style="color:var(--s2)">S2</span><span style="color:var(--text3);margin-left:4px">Proks Tab1 · Dist Tab2</span></div>
-        <div class="sl-row"><div class="sl-dot" style="background:var(--s3)"></div><span style="color:var(--s3)">S3</span><span style="color:var(--text3);margin-left:4px">Proks Tab2 · Dist Tab2</span></div>
-        <div class="sl-row"><div class="sl-dot" style="background:var(--s4)"></div><span style="color:var(--s4)">S4</span><span style="color:var(--text3);margin-left:4px">Proks Tab2 · Dist Tab3</span></div>
-        <div class="sl-row"><div class="sl-dot" style="background:var(--s5)"></div><span style="color:var(--s5)">S5</span><span style="color:var(--text3);margin-left:4px">Proks Tab3 · Dist Tab3</span></div>
-        <div class="sl-row"><div class="sl-dot" style="background:var(--s6)"></div><span style="color:var(--s6)">S6</span><span style="color:var(--text3);margin-left:4px">Proks Tab3 · Dist Tab1</span></div>
-      </div>
-    </div>
-  </div>
-  <div class="scard">
-    <div class="scard-title">EXPORT</div>
-    <div class="scard-body">
-      <button class="xbtn" onclick="dlSVG()">↓ SVG (Teknik Çizim)</button>
-      <button class="xbtn" onclick="dlCoords()">↓ CSV (Koordinatlar)</button>
+  <div class="sc">
+    <h4>EXPORT</h4>
+    <div class="sc-b">
+      <button class="xb" onclick="dlSVG()">↓ SVG — Teknik Çizim</button>
+      <button class="xb" onclick="dlCoords()">↓ CSV — Koordinatlar</button>
     </div>
   </div>
 </aside>
 
-<!-- CONTENT -->
-<div id="content">
-<div id="tabbar">
-  <button class="tabbtn active"  data-tab="t2d"   onclick="switchTab('t2d')">2D TEKNİK ÇİZİM</button>
-  <button class="tabbtn"         data-tab="t3d"   onclick="switchTab('t3d')">3D MONTAJ</button>
-  <button class="tabbtn"         data-tab="tall"  onclick="switchTab('tall')">TÜM HALKALAR</button>
-  <button class="tabbtn"         data-tab="tcoord"onclick="switchTab('tcoord')">KOORDİNATLAR</button>
-  <button class="tabbtn corrtab" data-tab="tcorr" onclick="switchTab('tcorr')">⚕ DÜZELTME PROGRAMI</button>
+<div id="ct">
+<div id="tbar">
+  <button class="tb on" data-t="t2d"   onclick="sw('t2d')">2D TEKNİK ÇİZİM</button>
+  <button class="tb"    data-t="t3d"   onclick="sw('t3d')">3D MONTAJ</button>
+  <button class="tb"    data-t="tall"  onclick="sw('tall')">TÜM HALKALAR</button>
+  <button class="tb"    data-t="tco"   onclick="sw('tco')">KOORDİNATLAR</button>
+  <button class="tb cx" data-t="tcx"   onclick="sw('tcx')">⚕ DÜZELTME PROGRAMI</button>
 </div>
-<div id="panels">
+<div id="pn">
 
-<!-- ─── 2D ─── -->
-<div class="panel active" id="t2d">
-  <div id="ring-layout">
-    <div id="ring-wrap">
-      <svg id="rsvg" width="390" height="390" style="display:block"></svg>
-    </div>
-    <div id="ring-info-col">
-      <div class="info-card">
-        <div class="card-title">TAB — STRUT BAĞLANTI HARİTASI</div>
-        <table class="ctable" id="tab-map-table">
-          <thead><tr><th>Tab</th><th>Strut</th><th>Açı°</th><th>X mm</th><th>Y mm</th></tr></thead>
-          <tbody id="tab-map-body"></tbody>
-        </table>
+<!-- 2D -->
+<div class="pan on" id="t2d">
+  <div id="rl">
+    <div id="rw"><svg id="rsvg" width="400" height="400" style="display:block"></svg></div>
+    <div id="rc">
+      <div class="ic">
+        <h5>TAB — STRUT BAĞLANTI HARİTASI</h5>
+        <table class="ct"><thead><tr><th>Tab</th><th>Yön</th><th>Strut</th><th>Açı°</th><th>X mm</th><th>Y mm</th></tr></thead>
+        <tbody id="tmap"></tbody></table>
       </div>
-      <div class="info-card">
-        <div class="card-title">STRUT TOPOLOJI ÖZET</div>
-        <table class="ctable" id="topo-table">
-          <thead><tr><th>Strut</th><th>Proks</th><th>Dist</th></tr></thead>
-          <tbody id="topo-body"></tbody>
-        </table>
+      <div class="ic">
+        <h5>STRUT TOPOLOJI</h5>
+        <table class="ct"><thead><tr><th>Strut</th><th>Proksimal</th><th>Distal</th></tr></thead>
+        <tbody id="topo"></tbody></table>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ─── 3D ─── -->
-<div class="panel" id="t3d" style="padding:12px">
-  <div id="v3d-controls">
-    <div class="leg3d">
-      <div class="l3item"><div class="sl-dot" style="background:var(--blue)"></div>Proksimal</div>
-      <div class="l3item"><div class="sl-dot" style="background:var(--green)"></div>Distal</div>
-      <div class="l3item"><div class="sl-dot" style="background:var(--s1)"></div>S1</div>
-      <div class="l3item"><div class="sl-dot" style="background:var(--s2)"></div>S2</div>
-      <div class="l3item"><div class="sl-dot" style="background:var(--s3)"></div>S3</div>
-      <div class="l3item"><div class="sl-dot" style="background:var(--s4)"></div>S4</div>
-      <div class="l3item"><div class="sl-dot" style="background:var(--s5)"></div>S5</div>
-      <div class="l3item"><div class="sl-dot" style="background:var(--s6)"></div>S6</div>
+<!-- 3D -->
+<div class="pan" id="t3d" style="padding:12px">
+  <div id="v3c">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;font-family:'Share Tech Mono';font-size:9px">
+      <span><span style="color:var(--bl)">●</span> Proks</span>
+      <span><span style="color:var(--gr)">●</span> Dist</span>
+      <span><span style="color:var(--s1)">●</span>S1</span><span><span style="color:var(--s2)">●</span>S2</span>
+      <span><span style="color:var(--s3)">●</span>S3</span><span><span style="color:var(--s4)">●</span>S4</span>
+      <span><span style="color:var(--s5)">●</span>S5</span><span><span style="color:var(--s6)">●</span>S6</span>
     </div>
-    <div class="sep-ctl" style="margin-left:auto">
+    <div class="sc2" style="margin-left:auto">
       <label>Aralık:</label>
-      <input type="range" id="sep-sl" min="60" max="220" value="120" oninput="onSep(this.value)" style="width:130px"/>
-      <span class="sepval" id="sep-lbl">120 mm</span>
+      <input type="range" id="seps" min="60" max="220" value="120" oninput="onSep(this.value)" style="width:120px"/>
+      <span class="sv" id="sepl">120 mm</span>
     </div>
-    <span style="font-family:'Share Tech Mono';font-size:9px;color:var(--text3)">🖱 Sürükle→Döndür</span>
+    <span style="font-family:'Share Tech Mono';font-size:9px;color:var(--tx3)">🖱 Sürükle→Döndür | Ön: Anterior</span>
   </div>
-  <div id="v3d-box"></div>
+  <div id="v3b"></div>
 </div>
 
-<!-- ─── ALL ─── -->
-<div class="panel" id="tall">
-  <div id="allgrid"></div>
-</div>
+<!-- ALL -->
+<div class="pan" id="tall"><div id="ag" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px"></div></div>
 
-<!-- ─── COORDS ─── -->
-<div class="panel" id="tcoord">
-  <div id="coord-wrap">
-    <table class="mtable">
-      <thead><tr><th>Ø İç</th><th>Ø Dış</th><th>R (mm)</th><th>Strut</th><th>Tab</th><th>Açı°</th><th>X mm</th><th>Y mm</th></tr></thead>
-      <tbody id="coord-body"></tbody>
-    </table>
-  </div>
-</div>
+<!-- COORDS -->
+<div class="pan" id="tco"><div id="cw">
+  <table class="mt"><thead><tr><th>Ø İç</th><th>Ø Dış</th><th>R mm</th><th>Strut</th><th>Tab</th><th>Yön</th><th>Açı°</th><th>X mm</th><th>Y mm</th></tr></thead>
+  <tbody id="cb"></tbody></table>
+</div></div>
 
-<!-- ─── CORRECTION ─── -->
-<div class="panel" id="tcorr" style="flex-direction:row;padding:9px;gap:0">
+<!-- CORRECTION -->
+<div class="pan" id="tcx" style="flex-direction:row;padding:9px;gap:0">
 <div id="cl">
-
-<!-- Form -->
 <div id="cf">
 
-  <div class="fsec">
-    <div class="fsec-title">HALKA / MONTAJ</div>
-    <div class="fgrid">
-      <label>Halka Ø</label>
-      <select id="cf-d">
+  <div class="fs">
+    <h4>MONTAJ PARAMETRELERİ</h4>
+    <div class="fg">
+      <label>Halka Boyutu</label>
+      <select id="cfd">
         <option value="120">Ø 120 mm</option>
         <option value="150" selected>Ø 150 mm</option>
         <option value="180">Ø 180 mm</option>
         <option value="210">Ø 210 mm</option>
       </select>
-      <label>Aralık (mm)</label><input type="number" id="cf-sep"  value="120" step="5" min="40" max="250">
-      <label>CORA (mm)</label>  <input type="number" id="cf-cora" value="60"  step="5" min="5"  max="200">
-    </div>
-  </div>
+      <label>Halka Aralığı</label>
+      <input type="number" id="cfsep" value="120" step="5" min="40" max="250">
 
-  <div class="fsec">
-    <div class="fsec-title">DEFORMİTE</div>
-    <div class="fgrid">
-      <label>Koronal (+Var)°</label><input type="number" id="cf-cor" value="0" step="0.5" min="-90" max="90">
-      <label>Sagittal (+PK)°</label><input type="number" id="cf-sag" value="0" step="0.5" min="-90" max="90">
-      <label>Aksiyel (+Int)°</label><input type="number" id="cf-axl" value="0" step="0.5" min="-90" max="90">
-      <label>AP trans (mm)</label>   <input type="number" id="cf-apt" value="0" step="0.5" min="-50" max="50">
-      <label>ML trans (mm)</label>   <input type="number" id="cf-mlt" value="0" step="0.5" min="-50" max="50">
-      <label>Boy (mm)</label>        <input type="number" id="cf-len" value="0" step="0.5" min="-50" max="50">
-    </div>
-  </div>
+      <label>Referans Halka</label>
+      <select id="cfref">
+        <option value="proximal">Proksimal (Üst)</option>
+        <option value="distal">Distal (Alt)</option>
+      </select>
 
-  <div class="fsec">
-    <div class="fsec-title">BAŞLANGIÇ STRUT UZUNLUKLARI</div>
-    <div class="il-grid" id="il-grid">
-      <!-- JS tarafından doldurulur -->
-    </div>
-    <button class="auto-btn" onclick="autoFillLengths()">⟳ Deformiteden Otomatik Hesapla</button>
-  </div>
-
-  <div class="fsec">
-    <div class="fsec-title">TAKVİM</div>
-    <div class="fgrid">
-      <label>Latent (gün)</label>    <input type="number" id="cf-lat" value="7"  step="1" min="0" max="30">
-      <label>Düzeltme (gün)</label>  <input type="number" id="cf-dur" value="30" step="1" min="5" max="120">
-    </div>
-  </div>
-
-  <button class="calc-btn" onclick="calculate()">⚙  HESAPLA</button>
-  <button class="csvbtn" id="csvbtn" onclick="dlCorrCSV()">↓  TAKVİM CSV</button>
-
-  <div style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:7px;margin-top:4px;font-family:'Share Tech Mono';font-size:9px;color:var(--text3);line-height:1.8">
-    PK = Prokürvatüm (apex ant.)<br>
-    RK = Rekürvatüm (apex post.)<br>
-    Int/Ext = Rotasyon yönü<br>
-    <span style="opacity:.5">Başlangıç uzunlukları:<br>
-    ameliyat sonrası ölçülen<br>
-    veya ayarlanan değerler</span>
-  </div>
-</div>
-
-<!-- Results -->
-<div id="cr" style="padding-left:10px">
-  <div id="csummary">
-    <div id="csumtext" style="color:var(--text3)">← Parametreleri doldurun ve <span style="color:var(--green)">HESAPLA</span>'ya basın.</div>
-    <div id="strut-cards"></div>
-  </div>
-  <div id="ctabs-wrap">
-    <div class="mini-bar">
-      <button class="mtab active" onclick="miniSwitch('mt-table')">GÜNLÜK TAKVİM</button>
-      <button class="mtab" onclick="miniSwitch('mt-chart')">GRAFİK</button>
-    </div>
-    <div class="mpanel active" id="mt-table">
-      <div style="overflow:auto;max-height:340px">
-        <table class="mtable" id="sched-table">
-          <thead><tr id="shead"></tr></thead>
-          <tbody id="sbody"></tbody>
-        </table>
+      <label>Ref. Halka → CORA</label>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:4px;align-items:center">
+        <input type="number" id="cfcora" value="60" step="5" min="0" max="300">
+        <span style="font-family:'Share Tech Mono';font-size:9px;color:var(--tx3)">mm</span>
       </div>
     </div>
-    <div class="mpanel" id="mt-chart">
-      <div id="chart-box"><canvas id="corrChart"></canvas></div>
+    <div style="padding:0 9px 8px;font-family:'Share Tech Mono';font-size:9px;color:var(--tx3);line-height:1.8;border-top:1px solid var(--b);padding-top:6px;margin-top:2px">
+      Referans halka merkezinden<br>
+      CORA/origin noktasına<br>
+      <span style="color:var(--am)">kemik ekseni boyunca mesafe</span>
     </div>
+  </div>
+
+  <div class="fs">
+    <h4>DEFORMİTE PARAMETRELERİ</h4>
+    <div class="fg">
+      <label>Koronal (+Varus)°</label>  <input type="number" id="cfcor" value="0" step="0.5" min="-90" max="90">
+      <label>Sagittal (+Prokür.)°</label><input type="number" id="cfsag" value="0" step="0.5" min="-90" max="90">
+      <label>Aksiyel (+İnt.rot.)°</label><input type="number" id="cfaxl" value="0" step="0.5" min="-90" max="90">
+      <label>AP translasyon</label>      <input type="number" id="cfapt" value="0" step="0.5" min="-50" max="50">
+      <label>ML translasyon</label>      <input type="number" id="cfmlt" value="0" step="0.5" min="-50" max="50">
+      <label>Boy (+uzama mm)</label>     <input type="number" id="cflen" value="0" step="0.5" min="-50" max="50">
+    </div>
+  </div>
+
+  <div class="fs">
+    <h4>BAŞLANGIÇ STRUT UZUNLUKLARI</h4>
+    <div class="ilg" id="ilg"></div>
+    <button class="auto" onclick="autoFill()">⟳  Deformiteden Otomatik Hesapla</button>
+  </div>
+
+  <div class="fs">
+    <h4>DÜZELTME TAKVİMİ</h4>
+    <div class="fg">
+      <label>Latent süresi</label>   <input type="number" id="cflat" value="7"  step="1" min="0" max="30">
+      <label>Düzeltme süresi</label> <input type="number" id="cfdur" value="30" step="1" min="5" max="120">
+    </div>
+  </div>
+
+  <button class="calcb" onclick="calculate()">⚙  HESAPLA</button>
+  <button class="csvb" id="csvb" onclick="dlCSV()">↓  TAKVİM CSV</button>
+</div>
+
+<div id="cr" style="padding-left:10px">
+  <div id="cs">
+    <div id="cst" style="color:var(--tx3)">← Parametreleri doldurun ve <span style="color:var(--gr)">HESAPLA</span>'ya basın.</div>
+    <div id="scc"></div>
+  </div>
+  <div id="rtw">
+    <div class="mbar">
+      <button class="mt2 on" onclick="mTab('mt-t')">GÜNLÜK TAKVİM</button>
+      <button class="mt2"    onclick="mTab('mt-c')">GRAFİK</button>
+    </div>
+    <div class="mpan on" id="mt-t">
+      <div style="overflow:auto;max-height:340px">
+        <table class="mt"><thead><tr id="sh"></tr></thead><tbody id="sb2"></tbody></table>
+      </div>
+    </div>
+    <div class="mpan" id="mt-c"><div id="chb"><canvas id="corChart"></canvas></div></div>
   </div>
 </div>
 </div>
-</div>
+</div><!-- tcx -->
 
-</div><!-- panels -->
-</div><!-- content -->
-</div><!-- main -->
+</div></div></div>
 
-<div id="sbar">
-  <span id="smsg">Hazır</span>
-  <span>TSF Hexapod</span>
-  <span>STRUT_CONN: S1→[P0→D1] S2→[P1→D2] S3→[P2→D3] S4→[P3→D4] S5→[P4→D5] S6→[P5→D0]</span>
-</div>
+<div id="sbar"><span id="smsg">Hazır — Tab1: Anterior</span><span>TSF Hexapod</span><span>STRUT_CONN: [[0,1],[1,2],[2,3],[3,4],[4,5],[5,0]]</span></div>
 
 <script>
-// ═══ CONSTANTS ═══════════════════════════════
-const RW=15, HD=7;
+// ═══ CONSTANTS ══════════════════════════════════════════════
+const RW=15,HD=7;
 const PA=[345,15,105,135,225,255];
 const DA=[45,75,165,195,285,315];
-const SC=[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0]]; // STRUT_CONN
-// dist_hole[i] → strut number
-const DIST_STRUT=new Array(6);
-SC.forEach(([pi,di],si)=>DIST_STRUT[di]=si+1);
+const SC=[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0]];
+
+// Distal delik → strut no
+const DS=new Array(6); SC.forEach(([p,d],s)=>DS[d]=s+1);
 
 const SCOL=['#4a9eff','#7ac0ff','#ff6b4a','#ffaa4a','#4aff9e','#4affce'];
-const TAB_COL=['#4a9eff','#ff6b4a','#4aff9e'];
-
-// Proksimal tab tanımları
+const TCOL=['#4a9eff','#ff6b4a','#4aff9e'];
 const PTABS=[
-  {name:"Tab 1",holes:[0,1],center:0,  start:345,end:15},
-  {name:"Tab 2",holes:[2,3],center:120,start:105,end:135},
-  {name:"Tab 3",holes:[4,5],center:240,start:225,end:255},
+  {name:"Tab 1",dir:"Anterior",      holes:[0,1],center:0,  start:345,end:15},
+  {name:"Tab 2",dir:"Post-Medial",   holes:[2,3],center:120,start:105,end:135},
+  {name:"Tab 3",dir:"Post-Lateral",  holes:[4,5],center:240,start:225,end:255},
 ];
-// Distal tab tanımları
 const DTABS=[
-  {name:"Tab 1",holes:[0,1],center:60, start:45, end:75},
-  {name:"Tab 2",holes:[2,3],center:180,start:165,end:195},
-  {name:"Tab 3",holes:[4,5],center:300,start:285,end:315},
+  {name:"Tab 1",dir:"Antero-Medial", holes:[0,1],center:60, start:45, end:75},
+  {name:"Tab 2",dir:"Posterior",     holes:[2,3],center:180,start:165,end:195},
+  {name:"Tab 3",dir:"Antero-Lateral",holes:[4,5],center:300,start:285,end:315},
 ];
 
-let G={size:150,type:'proximal',sep:120,rdata:null,corrRes:null,corrChart:null};
+let G={sz:150,tp:'proximal',sep:120,rd:null,cr:null,chart:null};
 
-// ═══ NAVIGATION ══════════════════════════════
-function goNav(n){
-  document.querySelectorAll('.npill').forEach(b=>b.classList.toggle('active',b.onclick.toString().includes(n)));
-  if(n==='ring') switchTab('t2d');
-  else switchTab('tcorr');
+// ═══ KLİNİK SVG KOORDİNAT SİSTEMİ ═══════════════════════════
+// Anterior = üst (12 o'clock), açılar clockwise artar (lateral→post→medial)
+// Matematiksel açı → klinik SVG:
+//   svgX = cx - r·sin(θ)    (sin(-θ) = -sin(θ))
+//   svgY = cy - r·cos(θ)    (cos negatif → üst)
+//
+// Doğrulama:
+//   θ=0°   (anterior): x=cx,    y=cy-r → TOP ✓
+//   θ=90°  (medial):   x=cx-r,  y=cy   → LEFT (sağ tibia, proksimalden görünüm) ✓
+//   θ=180° (post):     x=cx,    y=cy+r → BOTTOM ✓
+//   θ=270° (lateral):  x=cx+r,  y=cy   → RIGHT ✓
+
+const R2D = d => d * Math.PI / 180;
+function cSvg(cx, cy, r, deg) {
+  const a = R2D(deg);
+  return { x: cx - r * Math.sin(a), y: cy - r * Math.cos(a) };
 }
-function switchTab(id){
-  document.querySelectorAll('.tabbtn').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));
-  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id===id));
+
+// Arc: klinik koordinatlarda kısa yay çiz
+function cArc(cx, cy, r, a1, a2, col, w=2.5) {
+  const p1=cSvg(cx,cy,r,a1), p2=cSvg(cx,cy,r,a2);
+  // Klinik sistemde açı farkı (clockwise)
+  const span = (a2-a1+360)%360;
+  const large = span > 180 ? 1 : 0;
+  // SVG'de klinik clockwise = sweep=1 (y-flipped)
+  return `<path d="M${p1.x.toFixed(1)},${p1.y.toFixed(1)} A${r},${r} 0 ${large},1 ${p2.x.toFixed(1)},${p2.y.toFixed(1)}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`;
+}
+
+// ═══ NAV ═════════════════════════════════════════════════════
+function goNav(n){
+  document.querySelectorAll('.np').forEach(b=>b.classList.toggle('on',b.onclick.toString().includes(n)));
+  sw(n==='ring'?'t2d':'tcx');
+}
+function sw(id){
+  document.querySelectorAll('.tb').forEach(b=>b.classList.toggle('on',b.dataset.t===id));
+  document.querySelectorAll('.pan').forEach(p=>p.classList.toggle('on',p.id===id));
   if(id==='t3d')  init3D();
   if(id==='tall') loadAll();
-  if(id==='tcoord') loadCoords();
-  if(id==='tcorr') { document.getElementById('cf-d').value=G.size; initILGrid(); }
+  if(id==='tco')  loadCoords();
+  if(id==='tcx') { document.getElementById('cfd').value=G.sz; initILG(); }
 }
-function miniSwitch(id){
-  document.querySelectorAll('.mtab').forEach((b,i)=>b.classList.toggle('active',['mt-table','mt-chart'][i]===id));
-  document.querySelectorAll('.mpanel').forEach(p=>p.classList.toggle('active',p.id===id));
-  if(id==='mt-chart'&&G.corrRes) renderChart(G.corrRes);
+function mTab(id){
+  document.querySelectorAll('.mt2').forEach((b,i)=>b.classList.toggle('on',['mt-t','mt-c'][i]===id));
+  document.querySelectorAll('.mpan').forEach(p=>p.classList.toggle('on',p.id===id));
+  if(id==='mt-c'&&G.cr) renderChart(G.cr);
 }
 
-// ═══ SIDEBAR ═════════════════════════════════
+// ═══ SIDEBAR ═════════════════════════════════════════════════
 function setSize(s){
-  G.size=s;
-  document.querySelectorAll('.sbtn').forEach(b=>b.classList.toggle('active',b.textContent.includes(s)));
-  document.getElementById('sb-inner').textContent=s+' mm';
-  document.getElementById('sb-outer').textContent=(s+30)+' mm';
-  document.getElementById('sb-midr').textContent=(s/2+7.5)+' mm';
-  loadRing(); setStatus(`Ø${s} mm seçildi`);
+  G.sz=s;
+  document.querySelectorAll('.sb2').forEach(b=>b.classList.toggle('on',b.textContent.includes(s)));
+  document.getElementById('sb-i').textContent=s+' mm';
+  document.getElementById('sb-o').textContent=(s+30)+' mm';
+  document.getElementById('sb-r').textContent=(s/2+7.5)+' mm';
+  loadRing(); st(`Ø${s} mm seçildi`);
 }
 function setType(t){
-  G.type=t;
-  document.querySelectorAll('.tbtn').forEach(b=>b.classList.toggle('active',b.textContent.toLowerCase().startsWith(t.slice(0,5))));
+  G.tp=t;
+  document.querySelectorAll('.tb2').forEach(b=>b.classList.toggle('on',b.classList.contains(t.slice(0,2))));
   loadRing();
 }
 
-// ═══ RING LOAD ════════════════════════════════
+// ═══ RING LOAD ════════════════════════════════════════════════
 async function loadRing(){
-  const r=await fetch(`/api/ring?diam=${G.size}&type=${G.type}`);
-  G.rdata=await r.json();
-  drawRing(G.rdata);
-  fillTabMap(G.rdata);
-  fillTopo();
+  const r=await fetch(`/api/ring?diam=${G.sz}&type=${G.tp}`);
+  G.rd=await r.json(); drawRing(G.rd); fillTables(G.rd);
 }
 
-// ═══ 2D SVG ══════════════════════════════════
-function degToRad(d){return d*Math.PI/180}
-function svgArc(cx,cy,r,a1,a2,col,w=2.5){
-  // Küçük yay (her zaman 30° aralık)
-  const x1=cx+r*Math.cos(degToRad(a1)), y1=cy+r*Math.sin(degToRad(a1));
-  const x2=cx+r*Math.cos(degToRad(a2)), y2=cy+r*Math.sin(degToRad(a2));
-  let diff=(a2-a1+360)%360; const large=diff>180?1:0;
-  return `<path d="M${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r} 0 ${large},1 ${x2.toFixed(1)},${y2.toFixed(1)}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`;
-}
-
-function drawRing(data){
-  const W=390,H=390,PAD=52;
-  const ir=data.inner_diam/2, or=data.outer_diam/2, mr=data.mid_r;
+// ═══ 2D DRAW ═════════════════════════════════════════════════
+function drawRing(d){
+  const W=400,H=400,PAD=54;
+  const ir=d.inner_diam/2,or=d.outer_diam/2,mr=d.mid_r;
   const sc=(W-2*PAD)/2/or, cx=W/2, cy=H/2;
-  const S=v=>v*sc, px=x=>cx+x*sc, py=y=>cy+y*sc;
-  const tabs=data.ring_type==='proximal'?PTABS:DTABS;
+  const S=v=>v*sc;
 
-  // strut → hole mapping for labels
-  const holeStruts = data.ring_type==='proximal'
-    ? [1,2,3,4,5,6]      // prox hole i → strut i+1
-    : [...DIST_STRUT];    // dist hole mapping
+  // Hole SVG coordinates (klinik sistem)
+  const hpt=(hole)=>cSvg(cx,cy,S(mr),hole.angle);
 
-  let h=`<defs>
-    <pattern id="pg" width="18" height="18" patternUnits="userSpaceOnUse">
-      <path d="M18 0L0 0 0 18" fill="none" stroke="#1a2a3a" stroke-width="0.4"/>
-    </pattern>
-  </defs>
-  <rect width="${W}" height="${H}" fill="url(#pg)" opacity="0.6"/>
-  <line x1="${cx}" y1="${PAD/2}" x2="${cx}" y2="${H-PAD/2}" stroke="#1a3a5a" stroke-width="0.5"/>
-  <line x1="${PAD/2}" y1="${cy}" x2="${W-PAD/2}" y2="${cy}" stroke="#1a3a5a" stroke-width="0.5"/>
-  <circle cx="${cx}" cy="${cy}" r="${S(mr).toFixed(1)}" fill="none" stroke="#1a2a4a" stroke-width="0.5" stroke-dasharray="5 5"/>
+  const tabs=d.ring_type==='proximal'?PTABS:DTABS;
+  const hS=d.ring_type==='proximal'?[1,2,3,4,5,6]:DS;
+
+  // Cardinal direction labels
+  const dirs=[{a:0,t:"Ant"},{a:90,t:"Med"},{a:180,t:"Post"},{a:270,t:"Lat"}];
+  let h=`<defs><pattern id="pg" width="18" height="18" patternUnits="userSpaceOnUse">
+    <path d="M18 0L0 0 0 18" fill="none" stroke="#1a2a3a" stroke-width="0.4"/></pattern></defs>
+  <rect width="${W}" height="${H}" fill="url(#pg)" opacity="0.5"/>`;
+
+  // Cardinal crosses
+  dirs.forEach(dd=>{
+    const p=cSvg(cx,cy,S(or)*1.28,dd.a);
+    const p2=cSvg(cx,cy,S(or)*0.05,dd.a);
+    h+=`<line x1="${p2.x.toFixed(1)}" y1="${p2.y.toFixed(1)}" x2="${p.x.toFixed(1)}" y2="${p.y.toFixed(1)}" stroke="#1a3a5a" stroke-width="0.5"/>
+    <text x="${p.x.toFixed(1)}" y="${p.y.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" fill="#2a4a6a" font-size="10" font-family="Share Tech Mono">${dd.t}</text>`;
+  });
+
+  // Ring
+  h+=`<circle cx="${cx}" cy="${cy}" r="${S(mr).toFixed(1)}" fill="none" stroke="#1a2a4a" stroke-width="0.5" stroke-dasharray="5 5"/>
   <circle cx="${cx}" cy="${cy}" r="${S(or).toFixed(1)}" fill="#1a2744"/>
   <circle cx="${cx}" cy="${cy}" r="${S(ir).toFixed(1)}" fill="#080c15"/>
   <circle cx="${cx}" cy="${cy}" r="${S(or).toFixed(1)}" fill="none" stroke="#8fa0b3" stroke-width="1.5"/>
   <circle cx="${cx}" cy="${cy}" r="${S(ir).toFixed(1)}" fill="none" stroke="#8fa0b3" stroke-width="1.5"/>`;
 
-  // Tab bracket arcs (halka dışında)
-  const arcR = S(or)+9;
+  // Tab bracket arcs
+  const arcR=S(or)+10;
   tabs.forEach((tab,ti)=>{
-    h+=svgArc(cx,cy,arcR,tab.start,tab.end,TAB_COL[ti],3);
-    // Tab etiketi
-    const ca=degToRad(tab.center), lr=S(or)+22;
-    h+=`<text x="${(cx+lr*Math.cos(ca)).toFixed(1)}" y="${(cy+lr*Math.sin(ca)+4).toFixed(1)}"
-      text-anchor="middle" fill="${TAB_COL[ti]}" font-size="10" font-family="Share Tech Mono"
-      font-weight="bold">${tab.name}</text>`;
+    h+=cArc(cx,cy,arcR,tab.start,tab.end,TCOL[ti],3.5);
+    const lp=cSvg(cx,cy,S(or)+24,tab.center);
+    h+=`<text x="${lp.x.toFixed(1)}" y="${lp.y.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" fill="${TCOL[ti]}" font-size="10" font-family="Share Tech Mono" font-weight="bold">${tab.name}</text>`;
   });
 
-  // Rod delikleri
-  data.holes.forEach((hole,i)=>{
-    const sn=holeStruts[i], col=SCOL[sn-1];
-    const hx=px(hole.x), hy=py(hole.y);
-    const off = Math.abs(hole.x)<0.01 ? 0 : (hole.x>0?13:-13);
-    const ta  = hole.x>0?'start':(hole.x<0?'end':'middle');
-    const ly  = hole.y>0?12:-14;
-    h+=`<circle cx="${hx.toFixed(1)}" cy="${hy.toFixed(1)}" r="${(S(HD/2)+3.5).toFixed(1)}" fill="none" stroke="${col}" stroke-width="0.5" opacity="0.25"/>
-    <circle cx="${hx.toFixed(1)}" cy="${hy.toFixed(1)}" r="${S(HD/2).toFixed(1)}" fill="#080c15" stroke="${col}" stroke-width="2.2"/>
-    <text x="${(hx+off).toFixed(1)}" y="${(hy+4).toFixed(1)}" text-anchor="${ta}" fill="${col}" font-size="11" font-family="Share Tech Mono" font-weight="bold">S${sn}</text>`;
+  // Holes
+  d.holes.forEach((hole,i)=>{
+    const sn=hS[i], col=SCOL[sn-1], p=hpt(hole);
+    h+=`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${(S(HD/2)+3).toFixed(1)}" fill="none" stroke="${col}" stroke-width="0.5" opacity="0.2"/>
+    <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${S(HD/2).toFixed(1)}" fill="#080c15" stroke="${col}" stroke-width="2.2"/>
+    <text x="${p.x.toFixed(1)}" y="${(p.y+14).toFixed(1)}" text-anchor="middle" fill="${col}" font-size="10" font-family="Share Tech Mono" font-weight="bold">S${sn}</text>`;
   });
 
-  // Boyut çizgileri
-  const yd=cy+S(ir)+18;
-  h+=`<line x1="${(cx-S(ir)).toFixed(1)}" y1="${yd.toFixed(1)}" x2="${(cx+S(ir)).toFixed(1)}" y2="${yd.toFixed(1)}" stroke="#4a9eff" stroke-width="0.8"/>
-  <line x1="${(cx-S(ir)).toFixed(1)}" y1="${(yd-5).toFixed(1)}" x2="${(cx-S(ir)).toFixed(1)}" y2="${(yd+5).toFixed(1)}" stroke="#4a9eff" stroke-width="0.8"/>
-  <line x1="${(cx+S(ir)).toFixed(1)}" y1="${(yd-5).toFixed(1)}" x2="${(cx+S(ir)).toFixed(1)}" y2="${(yd+5).toFixed(1)}" stroke="#4a9eff" stroke-width="0.8"/>
-  <text x="${cx}" y="${(yd+14).toFixed(1)}" text-anchor="middle" fill="#4a9eff" font-size="9" font-family="Share Tech Mono">Ø${data.inner_diam} (iç)</text>
-  <text x="${cx}" y="${PAD-14}" text-anchor="middle" fill="#8fa0b3" font-size="9" font-family="Share Tech Mono">Ø${data.outer_diam} (dış)</text>
-  <text x="${cx}" y="14" text-anchor="middle" fill="#e0eaff" font-size="10" font-family="Share Tech Mono" letter-spacing="1">${data.ring_type==='proximal'?'Proksimal':'Distal'}  Ø${data.inner_diam} mm</text>`;
+  // Dim line (iç çap)
+  const pa=cSvg(cx,cy,S(ir),90), pb=cSvg(cx,cy,S(ir),270);
+  const ld=S(ir)+18;
+  h+=`<line x1="${(cx+ld).toFixed(1)}" y1="${cy.toFixed(1)}" x2="${(cx-ld).toFixed(1)}" y2="${cy.toFixed(1)}" stroke="#4a9eff" stroke-width="0.8"/>
+  <text x="${cx}" y="${(cy+28).toFixed(1)}" text-anchor="middle" fill="#4a9eff" font-size="9" font-family="Share Tech Mono">Ø${d.inner_diam} (iç)</text>
+  <text x="${cx}" y="${PAD-16}" text-anchor="middle" fill="#8fa0b3" font-size="9" font-family="Share Tech Mono">Ø${d.outer_diam} (dış)</text>
+  <text x="${cx}" y="14" text-anchor="middle" fill="#e0eaff" font-size="10" font-family="Share Tech Mono" letter-spacing="1">${d.ring_type==='proximal'?'Proksimal':'Distal'} • Ø${d.inner_diam} mm</text>`;
 
   document.getElementById('rsvg').innerHTML=h;
 }
 
-function fillTabMap(data){
-  const tabs=data.ring_type==='proximal'?PTABS:DTABS;
-  const holeStruts=data.ring_type==='proximal'?[1,2,3,4,5,6]:[...DIST_STRUT];
-  const tbody=document.getElementById('tab-map-body');
-  let rows='';
+function fillTables(d){
+  const tabs=d.ring_type==='proximal'?PTABS:DTABS;
+  const hS=d.ring_type==='proximal'?[1,2,3,4,5,6]:DS;
+
+  // Tab map
+  let t='';
   tabs.forEach((tab,ti)=>{
     tab.holes.forEach((hi,j)=>{
-      const hole=data.holes[hi], sn=holeStruts[hi], col=SCOL[sn-1];
-      const tc=TAB_COL[ti];
-      rows+=`<tr>
-        ${j===0?`<td rowspan="2" style="color:${tc};font-weight:bold">${tab.name}</td>`:''}
-        <td style="color:${col}">S${sn}</td>
-        <td>${hole.angle}°</td>
-        <td>${hole.x}</td>
-        <td>${hole.y}</td>
-      </tr>`;
+      const hole=d.holes[hi],sn=hS[hi],col=SCOL[sn-1],tc=TCOL[ti];
+      t+=`<tr>${j===0?`<td rowspan="2" style="color:${tc};font-weight:bold">${tab.name}</td><td rowspan="2" style="color:${tc};font-size:9px">${tab.dir}</td>`:''}<td style="color:${col}">S${sn}</td><td>${hole.angle}°</td><td>${hole.x}</td><td>${hole.y}</td></tr>`;
     });
   });
-  tbody.innerHTML=rows;
-}
+  document.getElementById('tmap').innerHTML=t;
 
-function fillTopo(){
-  const body=document.getElementById('topo-body');
-  const pAngles=[345,15,105,135,225,255];
-  const dAngles=[45,75,165,195,285,315];
-  body.innerHTML=SC.map(([pi,di],si)=>{
+  // Topo
+  document.getElementById('topo').innerHTML=SC.map(([pi,di],si)=>{
     const col=SCOL[si];
     const pt=PTABS.find(t=>t.holes.includes(pi));
     const dt=DTABS.find(t=>t.holes.includes(di));
-    return `<tr>
-      <td style="color:${col};font-weight:bold">S${si+1}</td>
-      <td style="color:${TAB_COL[PTABS.indexOf(pt)]}">P${pi} · ${pAngles[pi]}° · ${pt.name}</td>
-      <td style="color:${TAB_COL[DTABS.indexOf(dt)]}">D${di} · ${dAngles[di]}° · ${dt.name}</td>
-    </tr>`;
+    return `<tr><td style="color:${col};font-weight:bold">S${si+1}</td>
+      <td style="color:${TCOL[PTABS.indexOf(pt)]}">P${pi} (${PA[pi]}°) ${pt.name}</td>
+      <td style="color:${TCOL[DTABS.indexOf(dt)]}">D${di} (${DA[di]}°) ${dt.name}</td></tr>`;
   }).join('');
 }
 
-// ═══ ALL RINGS ════════════════════════════════
+// ═══ ALL RINGS ════════════════════════════════════════════════
 async function loadAll(){
-  const r=await fetch(`/api/all-rings?type=${G.type}`);
+  const r=await fetch(`/api/all-rings?type=${G.tp}`);
   const all=await r.json();
-  const tabs=G.type==='proximal'?PTABS:DTABS;
-  const holeStruts=G.type==='proximal'?[1,2,3,4,5,6]:[...DIST_STRUT];
-  document.getElementById('allgrid').innerHTML=all.map(d=>{
+  const tabs=G.tp==='proximal'?PTABS:DTABS;
+  const hS=G.tp==='proximal'?[1,2,3,4,5,6]:DS;
+  document.getElementById('ag').innerHTML=all.map(d=>{
     const W=220,H=220,PAD=28;
-    const ir=d.inner_diam/2,or=d.outer_diam/2,mr=d.mid_r;
-    const sc=(W-2*PAD)/2/or,cx=W/2,cy=H/2;
-    const S=v=>v*sc,px=x=>cx+x*sc,py=y=>cy+y*sc;
-    const arcR=S(or)+7;
-    let svg=`<svg width="${W}" height="${H}" style="display:block">
-      <rect width="${W}" height="${H}" fill="#080c15"/>
-      <circle cx="${cx}" cy="${cy}" r="${S(mr).toFixed(1)}" fill="none" stroke="#1a2a4a" stroke-width="0.4" stroke-dasharray="4 4"/>
-      <circle cx="${cx}" cy="${cy}" r="${S(or).toFixed(1)}" fill="#1a2744" stroke="#8fa0b3" stroke-width="1.2"/>
-      <circle cx="${cx}" cy="${cy}" r="${S(ir).toFixed(1)}" fill="#080c15" stroke="#8fa0b3" stroke-width="1.2"/>`;
-    tabs.forEach((tab,ti)=>{
-      const x1=cx+arcR*Math.cos(degToRad(tab.start)),y1=cy+arcR*Math.sin(degToRad(tab.start));
-      const x2=cx+arcR*Math.cos(degToRad(tab.end)),y2=cy+arcR*Math.sin(degToRad(tab.end));
-      let diff=(tab.end-tab.start+360)%360;
-      svg+=`<path d="M${x1.toFixed(1)},${y1.toFixed(1)} A${arcR},${arcR} 0 ${diff>180?1:0},1 ${x2.toFixed(1)},${y2.toFixed(1)}" fill="none" stroke="${TAB_COL[ti]}" stroke-width="2.5" stroke-linecap="round"/>`;
-    });
+    const or=d.outer_diam/2,mr=d.mid_r,ir=d.inner_diam/2;
+    const sc=(W-2*PAD)/2/or,cx=W/2,cy=H/2,S=v=>v*sc;
+    const aR=S(or)+7;
+    let s=`<svg width="${W}" height="${H}" style="display:block"><rect width="${W}" height="${H}" fill="#080c15"/>
+    <circle cx="${cx}" cy="${cy}" r="${S(mr).toFixed(1)}" fill="none" stroke="#1a2a4a" stroke-width="0.4" stroke-dasharray="4 4"/>
+    <circle cx="${cx}" cy="${cy}" r="${S(or).toFixed(1)}" fill="#1a2744" stroke="#8fa0b3" stroke-width="1.2"/>
+    <circle cx="${cx}" cy="${cy}" r="${S(ir).toFixed(1)}" fill="#080c15" stroke="#8fa0b3" stroke-width="1.2"/>`;
+    // Cardinal
+    [{a:0,t:"A"},{a:180,t:"P"}].forEach(dd=>{const p=cSvg(cx,cy,S(or)*1.22,dd.a);s+=`<text x="${p.x.toFixed(1)}" y="${p.y.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" fill="#1a3a5a" font-size="8" font-family="monospace">${dd.t}</text>`;});
+    // Tab arcs
+    tabs.forEach((tab,ti)=>{s+=cArc(cx,cy,aR,tab.start,tab.end,TCOL[ti],2.5);});
+    // Holes
     d.holes.forEach((hole,i)=>{
-      const sn=holeStruts[i],col=SCOL[sn-1],hx=px(hole.x),hy=py(hole.y);
-      svg+=`<circle cx="${hx.toFixed(1)}" cy="${hy.toFixed(1)}" r="${S(HD/2).toFixed(1)}" fill="#080c15" stroke="${col}" stroke-width="2"/>
-      <text x="${hx.toFixed(1)}" y="${(hy+4).toFixed(1)}" text-anchor="middle" fill="${col}" font-size="8" font-family="monospace">S${sn}</text>`;
+      const sn=hS[i],col=SCOL[sn-1],p=cSvg(cx,cy,S(mr),hole.angle);
+      s+=`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${S(HD/2).toFixed(1)}" fill="#080c15" stroke="${col}" stroke-width="1.8"/>
+      <text x="${p.x.toFixed(1)}" y="${(p.y+11).toFixed(1)}" text-anchor="middle" fill="${col}" font-size="8" font-family="monospace">S${sn}</text>`;
     });
-    svg+=`<text x="${cx}" y="${H-5}" text-anchor="middle" fill="#4a6a9e" font-size="8" font-family="monospace">R=${mr}mm</text></svg>`;
-    return `<div class="rcard" onclick="setSize(${d.inner_diam});switchTab('t2d')">
-      <div class="rcard-title">Ø${d.inner_diam} — dış Ø${d.outer_diam}</div>${svg}
-      <div class="rcard-info">Merkez R: ${mr} mm | Delik Ø7 mm</div></div>`;
+    s+=`<text x="${cx}" y="${H-5}" text-anchor="middle" fill="#4a6a9e" font-size="7" font-family="monospace">R=${mr}mm</text></svg>`;
+    return `<div style="background:var(--bg);border:1px solid var(--b);border-radius:8px;padding:10px;cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--bl)'" onmouseout="this.style.borderColor='var(--b)'" onclick="setSize(${d.inner_diam});sw('t2d')">
+      <div style="font-family:'Share Tech Mono';font-size:10px;color:var(--gr);letter-spacing:2px;margin-bottom:6px">Ø${d.inner_diam} — dış Ø${d.outer_diam}</div>${s}
+      <div style="font-size:10px;color:var(--tx3);margin-top:5px;font-family:'Share Tech Mono'">Merkez R: ${mr} mm</div></div>`;
   }).join('');
 }
 
-// ═══ COORDS ══════════════════════════════════
+// ═══ COORDS ═══════════════════════════════════════════════════
 function loadCoords(){
-  const angles=G.type==='proximal'?PA:DA;
-  const tabs=G.type==='proximal'?PTABS:DTABS;
-  const holeStruts=G.type==='proximal'?[1,2,3,4,5,6]:[...DIST_STRUT];
-  const sizes=[120,150,180,210];
+  const angles=G.tp==='proximal'?PA:DA;
+  const tabs=G.tp==='proximal'?PTABS:DTABS;
+  const hS=G.tp==='proximal'?[1,2,3,4,5,6]:DS;
   let rows='';
-  sizes.forEach(d=>{
-    const mr=d/2+7.5;
+  [120,150,180,210].forEach(sz=>{
+    const mr=sz/2+7.5;
     angles.forEach((a,i)=>{
-      const rad=degToRad(a),x=Math.round(mr*Math.cos(rad)*1000)/1000,y=Math.round(mr*Math.sin(rad)*1000)/1000;
-      const sn=holeStruts[i],col=SCOL[sn-1];
+      const rad=R2D(a),x=Math.round(mr*Math.cos(rad)*1000)/1000,y=Math.round(mr*Math.sin(rad)*1000)/1000;
+      const sn=hS[i],col=SCOL[sn-1];
       const tab=tabs.find(t=>t.holes.includes(i));
-      const tc=TAB_COL[tabs.indexOf(tab)];
-      rows+=`<tr>
-        <td>Ø${d}</td><td>Ø${d+30}</td><td>${mr}</td>
+      const tc=TCOL[tabs.indexOf(tab)];
+      rows+=`<tr><td>Ø${sz}</td><td>Ø${sz+30}</td><td>${mr}</td>
         <td style="color:${col}">S${sn}</td>
         <td style="color:${tc}">${tab.name}</td>
-        <td>${a}°</td><td>${x}</td><td>${y}</td>
-      </tr>`;
+        <td style="color:${tc};font-size:9px">${tab.dir}</td>
+        <td>${a}°</td><td>${x}</td><td>${y}</td></tr>`;
     });
   });
-  document.getElementById('coord-body').innerHTML=rows;
+  document.getElementById('cb').innerHTML=rows;
 }
 
-// ═══ 3D ══════════════════════════════════════
-let r3d=null,s3d=null,c3d=null,piv3d=null,anim3d=null;
-const dr3={active:false,lx:0,ly:0,rx:.4,ry:.5};
+// ═══ 3D ═══════════════════════════════════════════════════════
+let r3=null,s3=null,c3=null,pv=null,an=null;
+const dr={a:false,lx:0,ly:0,rx:.45,ry:.0}; // ry=0 → anterior camera-facing at init
 
 function init3D(){
-  const box=document.getElementById('v3d-box');
-  if(r3d){buildAssembly();return;}
+  const box=document.getElementById('v3b');
+  if(r3){build3D();return;}
   const W=box.clientWidth,H=box.clientHeight||430;
-  s3d=new THREE.Scene(); s3d.background=new THREE.Color(0x080c15);
-  s3d.fog=new THREE.FogExp2(0x080c15,.0012);
-  c3d=new THREE.PerspectiveCamera(42,W/H,1,3000);
-  c3d.position.set(0,G.sep*.8,G.size*2.6); c3d.lookAt(0,0,0);
-  r3d=new THREE.WebGLRenderer({antialias:true});
-  r3d.setSize(W,H); r3d.setPixelRatio(Math.min(devicePixelRatio,2));
-  box.appendChild(r3d.domElement);
-  s3d.add(new THREE.AmbientLight(0x334466,2.5));
-  const d1=new THREE.DirectionalLight(0xffffff,2.5); d1.position.set(300,400,300); s3d.add(d1);
-  s3d.add(Object.assign(new THREE.DirectionalLight(0x4a9eff,.8),{position:{set:()=>{}}}) );
-  piv3d=new THREE.Group(); s3d.add(piv3d);
-  buildAssembly();
-  const go=()=>{anim3d=requestAnimationFrame(go);piv3d.rotation.x=dr3.rx;piv3d.rotation.y=dr3.ry;r3d.render(s3d,c3d);};
+  s3=new THREE.Scene(); s3.background=new THREE.Color(0x080c15);
+  s3.fog=new THREE.FogExp2(0x080c15,.0012);
+  c3=new THREE.PerspectiveCamera(42,W/H,1,3000);
+  // Anterior (0°) = +X in our math → we want it to face camera (+Z in Three.js)
+  // Initial ry = -π/2 rotates so +X faces +Z (toward camera)
+  dr.ry=-Math.PI/2;
+  c3.position.set(0,G.sep*.7,G.sz*2.8); c3.lookAt(0,0,0);
+  r3=new THREE.WebGLRenderer({antialias:true});
+  r3.setSize(W,H); r3.setPixelRatio(Math.min(devicePixelRatio,2));
+  box.appendChild(r3.domElement);
+  s3.add(new THREE.AmbientLight(0x334466,2.5));
+  const d1=new THREE.DirectionalLight(0xffffff,2.5); d1.position.set(200,400,300); s3.add(d1);
+  const d2=new THREE.DirectionalLight(0x4a9eff,.8); d2.position.set(-300,-200,100); s3.add(d2);
+  pv=new THREE.Group(); s3.add(pv);
+  build3D();
+  const go=()=>{an=requestAnimationFrame(go);pv.rotation.x=dr.rx;pv.rotation.y=dr.ry;r3.render(s3,c3);};
   go();
-  const el=r3d.domElement;
-  el.addEventListener('mousedown',e=>{dr3.active=true;dr3.lx=e.clientX;dr3.ly=e.clientY});
-  window.addEventListener('mousemove',e=>{if(!dr3.active)return;dr3.ry+=(e.clientX-dr3.lx)*.01;dr3.rx+=(e.clientY-dr3.ly)*.008;dr3.lx=e.clientX;dr3.ly=e.clientY});
-  window.addEventListener('mouseup',()=>dr3.active=false);
+  const el=r3.domElement;
+  el.addEventListener('mousedown',e=>{dr.a=true;dr.lx=e.clientX;dr.ly=e.clientY});
+  window.addEventListener('mousemove',e=>{if(!dr.a)return;dr.ry+=(e.clientX-dr.lx)*.01;dr.rx+=(e.clientY-dr.ly)*.008;dr.lx=e.clientX;dr.ly=e.clientY});
+  window.addEventListener('mouseup',()=>dr.a=false);
+  el.addEventListener('touchstart',e=>{const t=e.touches[0];dr.a=true;dr.lx=t.clientX;dr.ly=t.clientY},{passive:true});
+  el.addEventListener('touchmove',e=>{if(!dr.a)return;const t=e.touches[0];dr.ry+=(t.clientX-dr.lx)*.012;dr.rx+=(t.clientY-dr.ly)*.010;dr.lx=t.clientX;dr.ly=t.clientY},{passive:true});
+  el.addEventListener('touchend',()=>dr.a=false);
 }
 
-function buildAssembly(){
-  while(piv3d.children.length)piv3d.remove(piv3d.children[0]);
-  const d=G.size,sep=G.sep,mr=d/2+RW/2,SR=3.5;
-  const a2v=(deg,y)=>{const r=degToRad(deg);return new THREE.Vector3(mr*Math.cos(r),y,mr*Math.sin(r));};
+function build3D(){
+  while(pv.children.length)pv.remove(pv.children[0]);
+  const d=G.sz,sep=G.sep,mr=d/2+RW/2,SR=3.5;
+  // Math: x=mr*cos(a), z=mr*sin(a), y=ring_height (Three.js Y=up)
+  const a2v=(deg,y)=>{const r=R2D(deg);return new THREE.Vector3(mr*Math.cos(r),y,mr*Math.sin(r));};
+  // Rings
   [[sep/2,0x4a9eff,0x1a3a8a],[-sep/2,0x4aff9e,0x0a5a3a]].forEach(([y,ec,em])=>{
-    const g=new THREE.TorusGeometry(mr,RW/2,16,100);
-    piv3d.add(Object.assign(new THREE.Mesh(g,new THREE.MeshPhongMaterial({color:0x1a2f5a,emissive:em,emissiveIntensity:.12,shininess:90})),{rotation:{x:Math.PI/2},position:{y}}));
-    const eg=new THREE.EdgesGeometry(new THREE.TorusGeometry(mr,RW/2+1,8,80));
-    const el=new THREE.LineSegments(eg,new THREE.LineBasicMaterial({color:ec,transparent:true,opacity:.28}));
-    el.rotation.x=Math.PI/2; el.position.y=y; piv3d.add(el);
+    const m=new THREE.Mesh(new THREE.TorusGeometry(mr,RW/2,16,100),
+      new THREE.MeshPhongMaterial({color:0x1a2f5a,emissive:em,emissiveIntensity:.12,shininess:90}));
+    m.rotation.x=Math.PI/2; m.position.y=y; pv.add(m);
+    const el=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.TorusGeometry(mr,RW/2+1,8,80)),
+      new THREE.LineBasicMaterial({color:ec,transparent:true,opacity:.28}));
+    el.rotation.x=Math.PI/2; el.position.y=y; pv.add(el);
   });
-  // 6 farklı renk, teker teker
+  // Structs (6 individual colors)
   const sc3=[0x4a9eff,0x7ac0ff,0xff6b4a,0xffaa4a,0x4aff9e,0x4affce];
   SC.forEach(([pi,di],si)=>{
-    const col=sc3[si];
-    const pv=a2v(PA[pi],sep/2),dv=a2v(DA[di],-sep/2);
-    const dir=new THREE.Vector3().subVectors(dv,pv),len=dir.length();
-    const mid=new THREE.Vector3().addVectors(pv,dv).multiplyScalar(.5);
+    const col=sc3[si],pv2=a2v(PA[pi],sep/2),dv=a2v(DA[di],-sep/2);
+    const dir=new THREE.Vector3().subVectors(dv,pv2),len=dir.length();
+    const mid=new THREE.Vector3().addVectors(pv2,dv).multiplyScalar(.5);
     const cm=new THREE.Mesh(new THREE.CylinderGeometry(SR,SR,len,12),
       new THREE.MeshPhongMaterial({color:col,emissive:col,emissiveIntensity:.18,shininess:130}));
     cm.position.copy(mid); cm.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.clone().normalize());
-    piv3d.add(cm);
-    [pv,dv].forEach(pos=>{
+    pv.add(cm);
+    [pv2,dv].forEach(pos=>{
       const sm=new THREE.Mesh(new THREE.SphereGeometry(SR*2,12,12),
         new THREE.MeshPhongMaterial({color:col,emissive:col,emissiveIntensity:.5,shininess:160}));
-      sm.position.copy(pos); piv3d.add(sm);
+      sm.position.copy(pos); pv.add(sm);
     });
   });
-  piv3d.add(new THREE.Mesh(new THREE.CylinderGeometry(1.5,1.5,sep*1.4,8),
+  pv.add(new THREE.Mesh(new THREE.CylinderGeometry(1.5,1.5,sep*1.4,8),
     new THREE.MeshBasicMaterial({color:0x2a3a5a,transparent:true,opacity:.25})));
-  s3d.children.filter(c=>c.isGridHelper).forEach(c=>s3d.remove(c));
-  const grid=new THREE.GridHelper(d*3.5,24,0x1a2a4a,0x0d1525);
-  grid.position.y=-sep/2-40; s3d.add(grid);
+  s3.children.filter(c=>c.isGridHelper).forEach(c=>s3.remove(c));
+  const g=new THREE.GridHelper(d*3.5,24,0x1a2a4a,0x0d1525); g.position.y=-sep/2-40; s3.add(g);
 }
-function onSep(v){G.sep=parseInt(v);document.getElementById('sep-lbl').textContent=v+' mm';buildAssembly();}
+function onSep(v){G.sep=parseInt(v);document.getElementById('sepl').textContent=v+' mm';build3D();}
 
-// ═══ CORRECTION ══════════════════════════════
-let lastCorrParams=null;
+// ═══ CORRECTION ══════════════════════════════════════════════
+let lastP=null;
 
-// Initial lengths grid oluştur
-function initILGrid(){
-  const grid=document.getElementById('il-grid');
-  if(grid.children.length>0) return; // zaten oluşturuldu
+function initILG(){
+  const g=document.getElementById('ilg');
+  if(g.children.length) return;
   let h='';
   for(let i=1;i<=6;i++){
-    const col=SCOL[i-1];
-    h+=`<label style="color:${col}">S${i}</label>
-    <input type="number" id="il${i}" value="0" step="0.1" min="50" max="400" style="border-color:${col}20">
-    <span class="il-unit">mm</span>`;
+    const c=SCOL[i-1];
+    h+=`<label style="color:${c}">S${i}</label>
+    <input type="number" id="il${i}" value="0" step="0.1" min="50" max="500" style="border-color:${c}33">
+    <span class="ilu">mm</span>`;
   }
-  grid.innerHTML=h;
+  g.innerHTML=h;
 }
 
-async function autoFillLengths(){
-  const params=getFormParams();
-  setStatus('Başlangıç uzunlukları hesaplanıyor...');
-  try{
-    const r=await fetch('/api/compute-initial',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(params)});
-    const d=await r.json();
-    if(d.error){alert('Hata: '+d.error);return;}
-    d.initial_lengths.forEach((v,i)=>{
-      const el=document.getElementById(`il${i+1}`);
-      if(el) el.value=v.toFixed(2);
-    });
-    setStatus('Başlangıç uzunlukları deformiteden hesaplandı');
-  }catch(e){alert('Hata: '+e);}
-}
-
-function getFormParams(){
-  return {
-    ring_diam:      parseInt(document.getElementById('cf-d').value),
-    separation:     parseFloat(document.getElementById('cf-sep').value),
-    cora_dist:      parseFloat(document.getElementById('cf-cora').value),
-    coronal:        parseFloat(document.getElementById('cf-cor').value),
-    sagittal:       parseFloat(document.getElementById('cf-sag').value),
-    axial:          parseFloat(document.getElementById('cf-axl').value),
-    ap_trans:       parseFloat(document.getElementById('cf-apt').value),
-    ml_trans:       parseFloat(document.getElementById('cf-mlt').value),
-    length_mm:      parseFloat(document.getElementById('cf-len').value),
-    latency_days:   parseInt(document.getElementById('cf-lat').value),
-    correction_days:parseInt(document.getElementById('cf-dur').value),
+function getP(){
+  return{
+    ring_diam:       parseInt(document.getElementById('cfd').value),
+    separation:      parseFloat(document.getElementById('cfsep').value),
+    reference_ring:  document.getElementById('cfref').value,
+    cora_dist:       parseFloat(document.getElementById('cfcora').value),
+    coronal:         parseFloat(document.getElementById('cfcor').value),
+    sagittal:        parseFloat(document.getElementById('cfsag').value),
+    axial:           parseFloat(document.getElementById('cfaxl').value),
+    ap_trans:        parseFloat(document.getElementById('cfapt').value),
+    ml_trans:        parseFloat(document.getElementById('cfmlt').value),
+    length_mm:       parseFloat(document.getElementById('cflen').value),
+    latency_days:    parseInt(document.getElementById('cflat').value),
+    correction_days: parseInt(document.getElementById('cfdur').value),
   };
 }
 
-function getInitialLengths(){
-  const vals=[];
-  for(let i=1;i<=6;i++){
-    const v=parseFloat(document.getElementById(`il${i}`)?.value||'0');
-    vals.push(v);
-  }
-  // Eğer tümü 0 ise, null döndür (otomatik hesapla)
-  return vals.every(v=>v===0)?null:vals;
+function getIL(){
+  const v=[]; for(let i=1;i<=6;i++) v.push(parseFloat(document.getElementById(`il${i}`)?.value||0));
+  return v.every(x=>x===0)?null:v;
+}
+
+async function autoFill(){
+  const p=getP(); st('Başlangıç uzunlukları hesaplanıyor...');
+  try{
+    const r=await fetch('/api/compute-initial',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
+    const d=await r.json();
+    if(d.error){alert('Hata: '+d.error);return;}
+    d.initial_lengths.forEach((v,i)=>{const el=document.getElementById(`il${i+1}`);if(el)el.value=v.toFixed(2);});
+    st(`Başlangıç uzunlukları hesaplandı (Ref: ${p.reference_ring}, CORA: ${p.cora_dist} mm)`);
+  }catch(e){alert(e);}
 }
 
 async function calculate(){
-  const params={...getFormParams()};
-  const il=getInitialLengths();
-  if(il) params.initial_lengths=il;
-  lastCorrParams=params;
-  document.getElementById('loading').classList.add('show');
-  setStatus('Hesaplanıyor...');
+  const p={...getP()},il=getIL();
+  if(il) p.initial_lengths=il;
+  lastP=p;
+  document.getElementById('load').classList.add('on'); st('Hesaplanıyor...');
   try{
-    const r=await fetch('/api/correction',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(params)});
+    const r=await fetch('/api/correction',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
     const res=await r.json();
     if(res.error){alert('Hata: '+res.error);return;}
-    G.corrRes=res;
-    renderSummary(res);
-    renderSched(res);
-    document.getElementById('csvbtn').style.display='block';
-    const mode=res.summary.input_mode==='manual'?'Manuel başlangıç uzunlukları':'Hesaplanan başlangıç uzunlukları';
-    setStatus(`Düzeltme programı hazır — ${res.total_days} gün — ${mode}`);
-  }catch(e){alert('Sunucu hatası: '+e);}
-  finally{document.getElementById('loading').classList.remove('show');}
+    G.cr=res; renderSum(res); renderSched(res);
+    document.getElementById('csvb').style.display='block';
+    const ref=res.summary.reference_ring==='proximal'?'Proks':'Dist';
+    st(`Düzeltme programı hazır — ${res.total_days} gün — CORA: ${res.summary.cora_z_from_prox.toFixed(0)} mm (proks'tan) — ${res.summary.input_mode==='manual'?'Manuel başlangıç':'Hesaplanan başlangıç'}`);
+  }catch(e){alert(e);}
+  finally{document.getElementById('load').classList.remove('on');}
 }
 
-function renderSummary(r){
+function renderSum(r){
   const s=r.summary;
-  const modeTag=s.input_mode==='manual'
-    ?'<span style="color:var(--amber)">Manuel başlangıç</span>'
-    :'<span style="color:var(--text3)">Hesaplanan başlangıç</span>';
-  document.getElementById('csumtext').innerHTML=
-    `<span style="color:var(--blue)">Ø${s.ring_diam}</span> | Aralık <span style="color:var(--blue)">${s.separation}mm</span> | CORA <span style="color:var(--blue)">${s.cora_dist}mm</span> | `+
-    `Kor <span style="color:var(--s1)">${s.coronal>0?'+':''}${s.coronal}°</span> `+
-    `Sag <span style="color:var(--s3)">${s.sagittal>0?'+':''}${s.sagittal}°</span> `+
-    `Aks <span style="color:var(--s5)">${s.axial>0?'+':''}${s.axial}°</span> | `+
-    `Boy ${s.length_mm>0?'+':''}${s.length_mm}mm | `+
-    `<span style="color:var(--green)">${s.total_days} gün</span> (${s.latency_days}+${s.correction_days}) | ${modeTag}`;
+  const refLbl=s.reference_ring==='proximal'?'Proks':'Dist';
+  const mTag=s.input_mode==='manual'?`<span style="color:var(--am)">Manuel başlangıç</span>`:`<span style="color:var(--tx3)">Hesaplanan başlangıç</span>`;
+  document.getElementById('cst').innerHTML=
+    `<span style="color:var(--bl)">Ø${s.ring_diam}</span> | `+
+    `Aralık <span style="color:var(--bl)">${s.separation} mm</span> | `+
+    `Ref: <span style="color:var(--am)">${refLbl}</span> CORA: <span style="color:var(--am)">${s.cora_dist} mm</span> `+
+    `(proks'tan: ${s.cora_z_from_prox.toFixed(0)} mm) | `+
+    `<span style="color:var(--s1)">K:${s.coronal>0?'+':''}${s.coronal}°</span> `+
+    `<span style="color:var(--s3)">S:${s.sagittal>0?'+':''}${s.sagittal}°</span> `+
+    `<span style="color:var(--s5)">A:${s.axial>0?'+':''}${s.axial}°</span> | `+
+    `Boy:${s.length_mm>0?'+':''}${s.length_mm} mm | `+
+    `<span style="color:var(--gr)">${s.total_days} gün</span> | ${mTag}`;
 
-  document.getElementById('strut-cards').innerHTML=r.used_initial.map((start,i)=>{
-    const end=r.target_lengths[i],delta=+(end-start).toFixed(3);
-    const col=SCOL[i],dc=delta>=0?'pos':'neg';
-    return `<div class="sc">
-      <div class="sc-id" style="color:${col}">S${i+1}</div>
-      <div class="sc-row"><span>Baş</span><span class="v">${start.toFixed(1)}</span></div>
-      <div class="sc-row"><span>Hdf</span><span class="v">${end.toFixed(1)}</span></div>
-      <div class="sc-delta ${dc}">${delta>0?'+':''}${delta}</div>
-    </div>`;
+  document.getElementById('scc').innerHTML=r.used_initial.map((st2,i)=>{
+    const end=r.target_lengths[i],d=+(end-st2).toFixed(3),col=SCOL[i],dc=d>=0?'p':'n';
+    return `<div class="scard">
+      <div class="scard-id" style="color:${col}">S${i+1}</div>
+      <div class="scard-r"><span>Baş</span><span class="v">${st2.toFixed(1)}</span></div>
+      <div class="scard-r"><span>Hdf</span><span class="v">${end.toFixed(1)}</span></div>
+      <div class="scard-d ${dc}">${d>0?'+':''}${d}</div></div>`;
   }).join('');
 }
 
 function renderSched(r){
-  const phaseCol={Latent:'#2a4a6a','Düzeltme':'#4aff9e','Tamamlandı':'#ff6b4a'};
-  document.getElementById('shead').innerHTML=
-    `<th>Gün</th><th>Faz</th><th>%</th>`+
-    [1,2,3,4,5,6].map(i=>`<th style="color:${SCOL[i-1]}">S${i}(mm)</th><th style="color:${SCOL[i-1]}">Δ</th>`).join('');
-  document.getElementById('sbody').innerHTML=r.schedule.map(e=>{
-    const pc=phaseCol[e.phase]||'#e0eaff';
-    let row=`<tr><td style="color:${pc}">${e.day}</td><td style="color:${pc}">${e.phase}</td><td style="color:${pc}">${(e.alpha*100).toFixed(0)}%</td>`;
+  const pc={Latent:'#2a4a6a','Düzeltme':'#4aff9e','Tamamlandı':'#ff6b4a'};
+  document.getElementById('sh').innerHTML=`<th>Gün</th><th>Faz</th><th>%</th>`+
+    [1,2,3,4,5,6].map(i=>`<th style="color:${SCOL[i-1]}">S${i}</th><th style="color:${SCOL[i-1]}">Δ</th>`).join('');
+  document.getElementById('sb2').innerHTML=r.schedule.map(e=>{
+    const c=pc[e.phase]||'#e0eaff';
+    let row=`<tr><td style="color:${c}">${e.day}</td><td style="color:${c}">${e.phase}</td><td style="color:${c}">${(e.alpha*100).toFixed(0)}%</td>`;
     for(let i=0;i<6;i++){
-      const dc=e.changes[i]>0?'var(--green)':e.changes[i]<0?'var(--orange)':'var(--text3)';
+      const dc=e.changes[i]>0?'var(--gr)':e.changes[i]<0?'var(--or)':'var(--tx3)';
       row+=`<td style="color:${SCOL[i]}">${e.lengths[i].toFixed(2)}</td><td style="color:${dc}">${e.changes[i]>0?'+':''}${e.changes[i].toFixed(3)}</td>`;
     }
     return row+'</tr>';
@@ -830,55 +778,44 @@ function renderSched(r){
 }
 
 function renderChart(r){
-  if(G.corrChart){G.corrChart.destroy();G.corrChart=null;}
-  const ctx=document.getElementById('corrChart').getContext('2d');
-  const days=r.schedule.map(e=>e.day);
-  G.corrChart=new Chart(ctx,{
-    type:'line',
-    data:{labels:days,datasets:[1,2,3,4,5,6].map((id,i)=>({
-      label:`S${id}`,
-      data:r.schedule.map(e=>e.lengths[i]),
-      borderColor:SCOL[i],backgroundColor:'transparent',
-      borderWidth:2,pointRadius:0,tension:.3,
-    }))},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{
-        legend:{labels:{color:'#8fa0b3',font:{family:'Share Tech Mono',size:10},boxWidth:10}},
-        tooltip:{backgroundColor:'#0d1525',borderColor:'#1a2a4a',borderWidth:1,
-          titleColor:'#4a9eff',bodyColor:'#e0eaff',
-          callbacks:{label:c=>`S${c.datasetIndex+1}: ${c.parsed.y.toFixed(2)} mm`}}
-      },
-      scales:{
-        x:{grid:{color:'rgba(26,42,74,.5)'},ticks:{color:'#4a6a9e',font:{family:'Share Tech Mono',size:9}},
-           title:{display:true,text:'Gün',color:'#4a6a9e',font:{family:'Share Tech Mono'}}},
-        y:{grid:{color:'rgba(26,42,74,.5)'},ticks:{color:'#4a6a9e',font:{family:'Share Tech Mono',size:9}},
-           title:{display:true,text:'Strut Uzunluğu (mm)',color:'#4a6a9e',font:{family:'Share Tech Mono'}}},
-      }
+  if(G.chart){G.chart.destroy();G.chart=null;}
+  const ctx=document.getElementById('corChart').getContext('2d');
+  G.chart=new Chart(ctx,{type:'line',data:{
+    labels:r.schedule.map(e=>e.day),
+    datasets:[1,2,3,4,5,6].map((id,i)=>({
+      label:`S${id}`,data:r.schedule.map(e=>e.lengths[i]),
+      borderColor:SCOL[i],backgroundColor:'transparent',borderWidth:2,pointRadius:0,tension:.3
+    }))
+  },options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{labels:{color:'#8fa0b3',font:{family:'Share Tech Mono',size:10},boxWidth:10}},
+      tooltip:{backgroundColor:'#0d1525',borderColor:'#1a2a4a',borderWidth:1,titleColor:'#4a9eff',bodyColor:'#e0eaff',
+        callbacks:{label:c=>`S${c.datasetIndex+1}: ${c.parsed.y.toFixed(2)} mm`}}},
+    scales:{
+      x:{grid:{color:'rgba(26,42,74,.5)'},ticks:{color:'#4a6a9e',font:{family:'Share Tech Mono',size:9}},title:{display:true,text:'Gün',color:'#4a6a9e',font:{family:'Share Tech Mono'}}},
+      y:{grid:{color:'rgba(26,42,74,.5)'},ticks:{color:'#4a6a9e',font:{family:'Share Tech Mono',size:9}},title:{display:true,text:'mm',color:'#4a6a9e',font:{family:'Share Tech Mono'}}}
     }
-  });
+  }});
 }
 
-// ═══ EXPORT ══════════════════════════════════
+// ═══ EXPORT ══════════════════════════════════════════════════
 function dlSVG(){
-  if(!G.rdata)return;
-  const svg=document.getElementById('rsvg');
-  const blob=new Blob([`<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="390" height="390">${svg.innerHTML}</svg>`],{type:'image/svg+xml'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download=`hexapod_${G.type}_o${G.size}.svg`; a.click(); URL.revokeObjectURL(url);
+  if(!G.rd) return;
+  const s=document.getElementById('rsvg');
+  const blob=new Blob([`<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">${s.innerHTML}</svg>`],{type:'image/svg+xml'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`hexapod_${G.tp}_o${G.sz}.svg`; a.click();
 }
-function dlCoords(){window.open(`/api/export/coords?type=${G.type}`);}
-async function dlCorrCSV(){
-  if(!lastCorrParams)return;
-  const r=await fetch('/api/export/csv',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(lastCorrParams)});
-  const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');
-  a.href=url; a.download='hexapod_takvim.csv'; a.click(); URL.revokeObjectURL(url);
+function dlCoords(){window.open(`/api/export/coords?type=${G.tp}`);}
+async function dlCSV(){
+  if(!lastP) return;
+  const r=await fetch('/api/export/csv',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(lastP)});
+  const blob=await r.blob(),a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='hexapod_takvim.csv'; a.click();
 }
 
-function setStatus(m){document.getElementById('smsg').textContent=m;}
+function st(m){document.getElementById('smsg').textContent=m;}
 
-// ═══ INIT ════════════════════════════════════
-setSize(150);
-initILGrid();
+// INIT
+setSize(150); initILG();
 </script>
 </body>
 </html>
