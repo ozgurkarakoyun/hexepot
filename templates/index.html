@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Hexapod Fiksatör — TSF Tasarım Sistemi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ══════════════════════════════════════════════
+   RESET & VARIABLES
+══════════════════════════════════════════════ */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080c15; --bg2:#0d1525; --bg3:#0f1c30;
+  --border:#1a2a4a; --border2:#253a5a;
+  --text:#e0eaff; --text2:#8fa0b3; --text3:#4a6a9e;
+  --blue:#4a9eff; --green:#4aff9e; --orange:#ff6b4a;
+  --pair-a:#4a9eff; --pair-b:#ff6b4a; --pair-c:#4aff9e;
+  --font-mono:'Share Tech Mono',monospace;
+  --font-title:'Orbitron',sans-serif;
+  --font-body:'Inter',sans-serif;
+  --sidebar:230px;
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:13px;display:flex;flex-direction:column}
+
+/* ══════════════════════════════════════════════
+   SCROLLBAR
+══════════════════════════════════════════════ */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* ══════════════════════════════════════════════
+   NAVBAR
+══════════════════════════════════════════════ */
+#navbar{
+  height:52px;background:rgba(8,12,21,0.97);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 20px;
+  gap:20px;flex-shrink:0;
+  backdrop-filter:blur(10px);
+  position:relative;z-index:100;
+}
+#navbar .logo{
+  font-family:var(--font-title);font-size:15px;
+  font-weight:900;color:var(--blue);letter-spacing:3px;
+  white-space:nowrap;
+}
+#navbar .logo span{color:var(--green);font-size:9px;display:block;letter-spacing:4px;margin-top:1px}
+#navbar .nav-center{flex:1;display:flex;justify-content:center;gap:4px}
+.nav-btn{
+  padding:5px 14px;background:transparent;
+  border:1px solid var(--border);color:var(--text3);
+  font-family:var(--font-mono);font-size:10px;
+  letter-spacing:2px;cursor:pointer;border-radius:3px;
+  transition:all .2s;white-space:nowrap;
+}
+.nav-btn:hover,.nav-btn.active{
+  border-color:var(--blue);color:var(--blue);background:rgba(74,158,255,.08)
+}
+.nav-btn.active{background:rgba(74,158,255,.12)}
+#navbar .nav-right{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--text3)}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green)}
+
+/* ══════════════════════════════════════════════
+   LAYOUT
+══════════════════════════════════════════════ */
+#main{display:flex;flex:1;overflow:hidden}
+
+/* ── Sidebar ── */
+#sidebar{
+  width:var(--sidebar);flex-shrink:0;
+  background:var(--bg2);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow-y:auto;padding:12px 10px;gap:10px;
+}
+.sb-section{border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.sb-title{
+  padding:7px 10px;font-family:var(--font-mono);font-size:9px;
+  letter-spacing:3px;color:var(--green);
+  background:rgba(74,255,158,.04);border-bottom:1px solid var(--border);
+}
+.sb-body{padding:8px}
+
+/* Size selector */
+.size-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.size-btn{
+  padding:8px 4px;background:transparent;border:1px solid var(--border);
+  color:var(--text3);font-family:var(--font-mono);font-size:12px;
+  cursor:pointer;border-radius:4px;transition:all .15s;text-align:center;
+}
+.size-btn:hover{border-color:var(--blue);color:var(--blue)}
+.size-btn.active{background:rgba(74,158,255,.12);border-color:var(--blue);color:var(--blue)}
+
+/* Type toggle */
+.type-toggle{display:flex;gap:5px}
+.type-btn{
+  flex:1;padding:7px 4px;background:transparent;
+  border:1px solid var(--border);color:var(--text3);
+  font-family:var(--font-mono);font-size:10px;
+  cursor:pointer;border-radius:4px;transition:all .15s;text-align:center;
+  letter-spacing:1px;
+}
+.type-btn.active.prox{border-color:var(--blue);color:var(--blue);background:rgba(74,158,255,.1)}
+.type-btn.active.dist{border-color:var(--green);color:var(--green);background:rgba(74,255,158,.08)}
+
+/* Info rows */
+.info-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(26,42,74,.5);font-size:11px}
+.info-row:last-child{border-bottom:none}
+.info-row .lbl{color:var(--text3)}
+.info-row .val{color:var(--text);font-family:var(--font-mono)}
+
+/* Export buttons */
+.exp-btn{
+  width:100%;padding:8px;margin-bottom:5px;
+  background:transparent;border:1px solid var(--border);
+  color:var(--text2);font-family:var(--font-mono);font-size:10px;
+  cursor:pointer;border-radius:4px;transition:all .2s;
+  letter-spacing:1px;text-align:left;display:flex;align-items:center;gap:6px;
+}
+.exp-btn:hover{border-color:var(--blue);color:var(--blue)}
+.exp-btn.green:hover{border-color:var(--green);color:var(--green)}
+.exp-btn:last-child{margin-bottom:0}
+
+/* ── Content ── */
+#content{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* Tab bar */
+#tabbar{
+  height:38px;background:var(--bg);border-bottom:1px solid var(--border);
+  display:flex;align-items:flex-end;padding:0 12px;gap:2px;flex-shrink:0;
+}
+.tab-btn{
+  padding:7px 16px;background:transparent;border:1px solid transparent;
+  border-bottom:none;color:var(--text3);font-family:var(--font-mono);
+  font-size:10px;letter-spacing:2px;cursor:pointer;
+  border-radius:4px 4px 0 0;transition:all .15s;white-space:nowrap;
+}
+.tab-btn:hover{color:var(--text2)}
+.tab-btn.active{
+  background:var(--bg2);border-color:var(--border);color:var(--text);
+  border-bottom-color:var(--bg2);
+}
+.tab-btn.correction-tab.active{color:var(--green);border-color:var(--green);border-bottom-color:var(--bg2)}
+
+/* Tab panels */
+#panels{flex:1;overflow:hidden;background:var(--bg2)}
+.panel{display:none;height:100%;padding:16px;overflow:auto}
+.panel.active{display:flex;flex-direction:column}
+
+/* ══════════════════════════════════════════════
+   2D RING VIEW
+══════════════════════════════════════════════ */
+#ring-container{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  gap:24px;flex-wrap:wrap;
+}
+#ring-svg-wrap{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:8px;padding:12px;
+}
+#ring-info-panel{
+  min-width:240px;display:flex;flex-direction:column;gap:10px;
+}
+.info-card{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:6px;padding:12px;
+}
+.card-title{
+  font-family:var(--font-mono);font-size:9px;letter-spacing:3px;
+  color:var(--green);margin-bottom:10px;
+}
+.coord-table{width:100%;border-collapse:collapse;font-family:var(--font-mono);font-size:11px}
+.coord-table th{
+  color:var(--text3);text-align:left;padding:4px 6px;
+  border-bottom:1px solid var(--border);font-size:9px;letter-spacing:1px;
+}
+.coord-table td{padding:4px 6px;border-bottom:1px solid rgba(26,42,74,.4)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:9px}
+.leg-dot{width:8px;height:8px;border-radius:50%}
+
+/* ══════════════════════════════════════════════
+   3D VIEW
+══════════════════════════════════════════════ */
+#view3d-wrap{
+  flex:1;display:flex;flex-direction:column;
+}
+#canvas3d-container{
+  flex:1;background:var(--bg);border:1px solid var(--border);
+  border-radius:8px;overflow:hidden;cursor:grab;min-height:400px;
+  position:relative;
+}
+#canvas3d-container canvas{display:block}
+.view3d-controls{
+  display:flex;align-items:center;gap:16px;margin-bottom:10px;flex-wrap:wrap;
+}
+.sep-control{display:flex;align-items:center;gap:10px;flex:1}
+.sep-control label{font-family:var(--font-mono);font-size:10px;color:var(--text3);white-space:nowrap}
+input[type=range]{
+  flex:1;min-width:100px;max-width:180px;
+  accent-color:var(--blue);height:4px;cursor:pointer;
+}
+.sep-val{font-family:var(--font-mono);font-size:13px;color:var(--blue);min-width:55px}
+.hint3d{font-size:10px;color:var(--text3);font-family:var(--font-mono)}
+.legend3d{display:flex;gap:14px;flex-wrap:wrap}
+.leg3d{display:flex;align-items:center;gap:6px;font-size:9px;font-family:var(--font-mono)}
+
+/* ══════════════════════════════════════════════
+   ALL RINGS
+══════════════════════════════════════════════ */
+#allrings-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;
+}
+.ring-card{
+  background:var(--bg);border:1px solid var(--border);border-radius:8px;
+  padding:12px;cursor:pointer;transition:all .2s;
+}
+.ring-card:hover{border-color:var(--blue);transform:translateY(-2px)}
+.ring-card-title{
+  font-family:var(--font-mono);font-size:10px;color:var(--green);
+  letter-spacing:2px;margin-bottom:8px;
+}
+.ring-card-info{font-size:10px;color:var(--text3);margin-top:6px;font-family:var(--font-mono)}
+
+/* ══════════════════════════════════════════════
+   COORD TABLE TAB
+══════════════════════════════════════════════ */
+#coord-table-wrap{overflow:auto;flex:1}
+table.main-table{width:100%;border-collapse:collapse;font-family:var(--font-mono);font-size:11px}
+.main-table th{
+  background:var(--bg);color:var(--text3);padding:8px 12px;
+  border:1px solid var(--border);font-size:9px;letter-spacing:2px;
+  position:sticky;top:0;z-index:1;
+}
+.main-table td{padding:7px 12px;border:1px solid rgba(26,42,74,.4)}
+.main-table tr:hover td{background:rgba(74,158,255,.04)}
+
+/* ══════════════════════════════════════════════
+   CORRECTION PROGRAM
+══════════════════════════════════════════════ */
+#corr-layout{display:flex;gap:14px;flex:1;overflow:hidden}
+#corr-form{
+  width:240px;flex-shrink:0;overflow-y:auto;
+  display:flex;flex-direction:column;gap:8px;
+}
+.form-section{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:6px;overflow:hidden;
+}
+.form-section-title{
+  padding:6px 10px;font-family:var(--font-mono);font-size:9px;
+  letter-spacing:3px;color:var(--green);background:rgba(74,255,158,.04);
+  border-bottom:1px solid var(--border);
+}
+.form-grid{display:grid;grid-template-columns:auto 1fr;gap:6px 8px;padding:8px 10px;align-items:center}
+.form-grid label{
+  font-family:var(--font-mono);font-size:10px;color:var(--text3);white-space:nowrap;
+}
+.form-grid input[type=number]{
+  background:var(--bg2);border:1px solid var(--border);
+  color:var(--text);font-family:var(--font-mono);font-size:11px;
+  padding:4px 6px;border-radius:3px;width:100%;
+  transition:border-color .2s;
+}
+.form-grid input[type=number]:focus{outline:none;border-color:var(--blue)}
+.calc-btn{
+  width:100%;padding:11px;background:transparent;
+  border:1px solid var(--green);color:var(--green);
+  font-family:var(--font-mono);font-size:12px;letter-spacing:3px;
+  cursor:pointer;border-radius:5px;transition:all .2s;
+  margin-bottom:4px;
+}
+.calc-btn:hover{background:rgba(74,255,158,.08)}
+.csv-btn-c{
+  width:100%;padding:8px;background:transparent;
+  border:1px solid var(--border);color:var(--text3);
+  font-family:var(--font-mono);font-size:10px;letter-spacing:2px;
+  cursor:pointer;border-radius:4px;transition:all .2s;
+  display:none;
+}
+.csv-btn-c:hover{border-color:var(--blue);color:var(--blue)}
+
+#corr-results{flex:1;display:flex;flex-direction:column;gap:10px;overflow:hidden;min-width:0}
+
+/* Summary bar */
+#corr-summary{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:6px;padding:10px 14px;flex-shrink:0;
+}
+#corr-summary-text{
+  font-family:var(--font-mono);font-size:10px;color:var(--text2);
+  line-height:1.7;
+}
+#corr-strut-summary{
+  display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px;
+}
+.strut-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:4px;padding:6px 4px;text-align:center;
+  font-family:var(--font-mono);font-size:10px;
+}
+.strut-card .sc-id{font-size:11px;font-weight:bold;margin-bottom:3px}
+.strut-card .sc-start{color:var(--text3);font-size:9px}
+.strut-card .sc-end{color:var(--text);font-size:9px}
+.strut-card .sc-delta{font-size:11px;margin-top:2px}
+.sc-delta.pos{color:var(--green)}
+.sc-delta.neg{color:var(--orange)}
+
+/* Result tabs */
+#corr-result-tabs{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.mini-tabbar{
+  display:flex;gap:2px;border-bottom:1px solid var(--border);
+  flex-shrink:0;padding:0 2px;
+}
+.mini-tab{
+  padding:5px 14px;background:transparent;border:1px solid transparent;
+  color:var(--text3);font-family:var(--font-mono);font-size:10px;
+  letter-spacing:2px;cursor:pointer;border-radius:4px 4px 0 0;
+  transition:all .15s;
+}
+.mini-tab.active{
+  background:var(--bg);border-color:var(--border);color:var(--text);
+  border-bottom-color:var(--bg);
+}
+.mini-panel{display:none;flex:1;overflow:auto;padding:6px 0}
+.mini-panel.active{display:block}
+
+/* Chart container */
+#chart-container{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:6px;padding:14px;height:340px;
+}
+
+/* ══════════════════════════════════════════════
+   STATUS BAR
+══════════════════════════════════════════════ */
+#statusbar{
+  height:24px;background:var(--bg);border-top:1px solid var(--border);
+  display:flex;align-items:center;padding:0 14px;gap:20px;
+  font-family:var(--font-mono);font-size:9px;color:var(--text3);
+  flex-shrink:0;letter-spacing:1px;
+}
+#statusbar span{opacity:.7}
+#status-msg{color:var(--blue);opacity:1!important}
+
+/* ══════════════════════════════════════════════
+   LOADING OVERLAY
+══════════════════════════════════════════════ */
+#loading{
+  display:none;position:fixed;inset:0;background:rgba(8,12,21,.7);
+  z-index:999;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-size:13px;color:var(--blue);
+  letter-spacing:3px;flex-direction:column;gap:10px;
+}
+#loading.show{display:flex}
+.spinner{
+  width:32px;height:32px;border:2px solid var(--border);
+  border-top-color:var(--blue);border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading">
+  <div class="spinner"></div>
+  <span>HESAPLANIYOR...</span>
+</div>
+
+<!-- Navbar -->
+<nav id="navbar">
+  <div class="logo">
+    HEXAPOD<br>
+    <span>FIKSATÖR SİSTEMİ</span>
+  </div>
+  <div class="nav-center">
+    <button class="nav-btn active" onclick="switchNavTab('ring')">HALKA TASARIMI</button>
+    <button class="nav-btn" onclick="switchNavTab('correction')">DÜZELTME PROGRAMI</button>
+  </div>
+  <div class="nav-right">
+    <div class="status-dot"></div>
+    <span>Taylor Spatial Frame</span>
+    <span style="opacity:.4">|</span>
+    <span>TSF Standart</span>
+  </div>
+</nav>
+
+<div id="main">
+<!-- ═════════ SIDEBAR ═════════ -->
+<aside id="sidebar">
+
+  <div class="sb-section">
+    <div class="sb-title">HALKA BOYUTU</div>
+    <div class="sb-body">
+      <div class="size-grid">
+        <button class="size-btn" onclick="selectSize(120)">Ø120</button>
+        <button class="size-btn active" onclick="selectSize(150)">Ø150</button>
+        <button class="size-btn" onclick="selectSize(180)">Ø180</button>
+        <button class="size-btn" onclick="selectSize(210)">Ø210</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-title">HALKA TİPİ</div>
+    <div class="sb-body">
+      <div class="type-toggle">
+        <button class="type-btn prox active" onclick="selectType('proximal')">Proksimal</button>
+        <button class="type-btn dist"       onclick="selectType('distal')">Distal</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-title">HALKA BİLGİSİ</div>
+    <div class="sb-body" id="ring-info-rows">
+      <div class="info-row"><span class="lbl">İç Çap</span><span class="val" id="sb-inner">150 mm</span></div>
+      <div class="info-row"><span class="lbl">Dış Çap</span><span class="val" id="sb-outer">180 mm</span></div>
+      <div class="info-row"><span class="lbl">Genişlik</span><span class="val">15 mm</span></div>
+      <div class="info-row"><span class="lbl">Yükseklik</span><span class="val">8 mm</span></div>
+      <div class="info-row"><span class="lbl">Merkez R</span><span class="val" id="sb-midr">82.5 mm</span></div>
+      <div class="info-row"><span class="lbl">Delik Çapı</span><span class="val">Ø7 mm</span></div>
+    </div>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-title">EXPORT</div>
+    <div class="sb-body">
+      <button class="exp-btn" onclick="exportSVG()">↓ SVG (Üstten Görünüm)</button>
+      <button class="exp-btn green" onclick="exportCoords()">↓ CSV (Koordinatlar)</button>
+    </div>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-title">LEGEND</div>
+    <div class="sb-body">
+      <div style="font-family:var(--font-mono);font-size:9px;color:var(--text3);line-height:2">
+        <div><span style="color:var(--pair-a)">■</span> Çift A — S1/S2</div>
+        <div><span style="color:var(--pair-b)">■</span> Çift B — S3/S4</div>
+        <div><span style="color:var(--pair-c)">■</span> Çift C — S5/S6</div>
+        <div style="margin-top:6px;opacity:.6">120° grup aralığı</div>
+        <div style="opacity:.6">30° çift içi açı</div>
+        <div style="opacity:.6">60° P/D offset</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ═════════ CONTENT ═════════ -->
+<div id="content">
+<div id="tabbar">
+  <button class="tab-btn active" data-tab="tab2d" onclick="switchTab('tab2d')">2D TEKNİK ÇİZİM</button>
+  <button class="tab-btn" data-tab="tab3d" onclick="switchTab('tab3d')">3D MONTAJ</button>
+  <button class="tab-btn" data-tab="taball" onclick="switchTab('taball')">TÜM HALKALAR</button>
+  <button class="tab-btn" data-tab="tabcoord" onclick="switchTab('tabcoord')">KOORDİNATLAR</button>
+  <button class="tab-btn correction-tab" data-tab="tabcorr" onclick="switchTab('tabcorr')">⚕ DÜZELTME PROGRAMI</button>
+</div>
+
+<div id="panels">
+
+<!-- ── 2D Tab ── -->
+<div class="panel active" id="tab2d">
+  <div id="ring-container">
+    <div id="ring-svg-wrap">
+      <svg id="ring-svg" width="380" height="380"></svg>
+    </div>
+    <div id="ring-info-panel">
+      <div class="info-card">
+        <div class="card-title">ROD BAĞLANTI KOORDİNATLARI</div>
+        <table class="coord-table">
+          <thead><tr>
+            <th>Strut</th><th>Çift</th><th>Açı°</th><th>X mm</th><th>Y mm</th>
+          </tr></thead>
+          <tbody id="coord-tbody"></tbody>
+        </table>
+        <div class="legend" style="margin-top:10px">
+          <div class="leg-item"><div class="leg-dot" style="background:var(--pair-a)"></div><span style="color:var(--pair-a)">Çift A</span></div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--pair-b)"></div><span style="color:var(--pair-b)">Çift B</span></div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--pair-c)"></div><span style="color:var(--pair-c)">Çift C</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── 3D Tab ── -->
+<div class="panel" id="tab3d" style="padding:12px">
+  <div class="view3d-controls">
+    <div class="legend3d">
+      <div class="leg3d"><div class="leg-dot" style="background:var(--blue)"></div>Proksimal</div>
+      <div class="leg3d"><div class="leg-dot" style="background:var(--green)"></div>Distal</div>
+      <div class="leg3d"><div class="leg-dot" style="background:var(--pair-a)"></div>Çift A</div>
+      <div class="leg3d"><div class="leg-dot" style="background:var(--pair-b)"></div>Çift B</div>
+      <div class="leg3d"><div class="leg-dot" style="background:var(--pair-c)"></div>Çift C</div>
+    </div>
+    <div class="sep-control" style="margin-left:auto">
+      <label>Halka Aralığı:</label>
+      <input type="range" id="sep-slider" min="60" max="220" value="120" oninput="onSepChange(this.value)"/>
+      <span class="sep-val" id="sep-label">120 mm</span>
+    </div>
+    <div class="hint3d">🖱 Sürükle → Döndür</div>
+  </div>
+  <div id="canvas3d-container"></div>
+</div>
+
+<!-- ── All Rings Tab ── -->
+<div class="panel" id="taball">
+  <div id="allrings-grid"></div>
+</div>
+
+<!-- ── Coordinates Tab ── -->
+<div class="panel" id="tabcoord">
+  <div id="coord-table-wrap">
+    <table class="main-table" id="main-coord-table">
+      <thead><tr>
+        <th>Halka Ø</th><th>Dış Ø</th><th>Merkez R</th>
+        <th>Strut</th><th>Çift</th><th>Açı (°)</th>
+        <th>X (mm)</th><th>Y (mm)</th>
+      </tr></thead>
+      <tbody id="main-coord-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── Correction Tab ── -->
+<div class="panel" id="tabcorr" style="flex-direction:row;padding:10px;gap:0">
+<div id="corr-layout">
+
+  <!-- Form -->
+  <div id="corr-form">
+
+    <div class="form-section">
+      <div class="form-section-title">HALKA / MONTAJ</div>
+      <div class="form-grid">
+        <label>Halka Ø (iç)</label>
+        <select id="cf-diam" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);font-family:var(--font-mono);font-size:11px;padding:4px 6px;border-radius:3px;width:100%">
+          <option value="120">Ø 120 mm</option>
+          <option value="150" selected>Ø 150 mm</option>
+          <option value="180">Ø 180 mm</option>
+          <option value="210">Ø 210 mm</option>
+        </select>
+        <label>Halka aralığı</label><input type="number" id="cf-sep"  value="120" step="5" min="40" max="250"> 
+        <label>CORA mesafesi</label><input type="number" id="cf-cora" value="60"  step="5" min="5"  max="200">
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">DEFORMİTE PARAMETRELERİ</div>
+      <div class="form-grid">
+        <label>Koronal (+Var)</label><input type="number" id="cf-cor" value="0" step="0.5" min="-90" max="90">
+        <label>Sagittal (+PK)</label><input type="number" id="cf-sag" value="0" step="0.5" min="-90" max="90">
+        <label>Aksiyel (+Int)</label><input type="number" id="cf-axl" value="0" step="0.5" min="-90" max="90">
+        <label>AP trans (+ant)</label><input type="number" id="cf-apt" value="0" step="0.5" min="-50" max="50">
+        <label>ML trans (+med)</label><input type="number" id="cf-mlt" value="0" step="0.5" min="-50" max="50">
+        <label>Boy (+uzama)</label><input type="number" id="cf-len" value="0" step="0.5" min="-50" max="50">
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">DÜZELTME TAKVİMİ</div>
+      <div class="form-grid">
+        <label>Latent (gün)</label><input type="number" id="cf-lat" value="7"  step="1" min="0" max="30">
+        <label>Düzeltme (gün)</label><input type="number" id="cf-dur" value="30" step="1" min="5" max="120">
+      </div>
+    </div>
+
+    <button class="calc-btn" onclick="calculate()">⚙  HESAPLA</button>
+    <button class="csv-btn-c" id="csv-btn-c" onclick="exportCorrCSV()">↓  TAKVİM CSV</button>
+
+    <div style="font-family:var(--font-mono);font-size:9px;color:var(--text3);line-height:1.8;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:4px;margin-top:4px">
+      PK = Prokürvatüm<br>
+      RK = Rekürvatüm<br>
+      Int = Internal rot.<br>
+      Ext = External rot.<br>
+      <span style="opacity:.5">Koordinatlar proksimal<br>halka merkezine göre</span>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="corr-results" style="padding-left:12px">
+    <div id="corr-summary">
+      <div id="corr-summary-text" style="color:var(--text3)">
+        ← Parametreleri girin ve <span style="color:var(--green)">HESAPLA</span>'ya basın.
+      </div>
+      <div id="corr-strut-summary"></div>
+    </div>
+
+    <div id="corr-result-tabs" style="flex:1;overflow:hidden">
+      <div class="mini-tabbar">
+        <button class="mini-tab active" onclick="miniTab('mtab-table')">GÜNLÜK TAKVİM</button>
+        <button class="mini-tab" onclick="miniTab('mtab-chart')">GRAFİK</button>
+      </div>
+      <div class="mini-panel active" id="mtab-table">
+        <div id="schedule-table-wrap" style="overflow:auto;max-height:360px">
+          <table class="main-table" id="schedule-table">
+            <thead><tr id="schedule-head"></tr></thead>
+            <tbody id="schedule-body"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="mini-panel" id="mtab-chart">
+        <div id="chart-container">
+          <canvas id="corrChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div><!-- /tabcorr -->
+
+</div><!-- /panels -->
+</div><!-- /content -->
+</div><!-- /main -->
+
+<!-- Status bar -->
+<div id="statusbar">
+  <span id="status-msg">Hazır</span>
+  <span>TSF Hexapod Fiksatör</span>
+  <span>3 × 2 Strut</span>
+  <span>120° Grup Aralığı</span>
+  <span>30° Çift İçi Açı</span>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════ -->
+<script>
+// ─── State ──────────────────────────────────
+let state = {
+  size: 150,
+  ringType: 'proximal',
+  separation: 120,
+  ringData: null,
+  corrResult: null,
+  corrChart: null,
+};
+
+const RING_WIDTH = 15;
+const HOLE_D = 7;
+const PROX_ANGLES = [345,15,105,135,225,255];
+const DIST_ANGLES = [45,75,165,195,285,315];
+const STRUT_CONN  = [[0,1],[1,0],[2,3],[3,2],[4,5],[5,4]];
+const PAIR_COLORS = ['#4a9eff','#4a9eff','#ff6b4a','#ff6b4a','#4aff9e','#4aff9e'];
+const PAIR_LABELS = ['A','A','B','B','C','C'];
+
+// ─── Navigation ─────────────────────────────
+function switchNavTab(t) {
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  if (t === 'correction') switchTab('tabcorr');
+  else switchTab('tab2d');
+}
+
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tabId);
+  });
+  document.querySelectorAll('.panel').forEach(p => {
+    p.classList.toggle('active', p.id === tabId);
+  });
+  if (tabId === 'tab3d') init3D();
+  if (tabId === 'taball') loadAllRings();
+  if (tabId === 'tabcoord') loadAllCoords();
+  if (tabId === 'tabcorr') {
+    document.getElementById('cf-diam').value = state.size;
+  }
+}
+
+function miniTab(id) {
+  document.querySelectorAll('.mini-tab').forEach((b,i) => {
+    const panels = ['mtab-table','mtab-chart'];
+    b.classList.toggle('active', panels[i] === id);
+  });
+  document.querySelectorAll('.mini-panel').forEach(p => {
+    p.classList.toggle('active', p.id === id);
+  });
+  if (id === 'mtab-chart' && state.corrResult) renderChart(state.corrResult);
+}
+
+// ─── Selectors ──────────────────────────────
+function selectSize(s) {
+  state.size = s;
+  document.querySelectorAll('.size-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.includes(s));
+  });
+  updateSidebar();
+  loadRing();
+}
+
+function selectType(t) {
+  state.ringType = t;
+  document.querySelectorAll('.type-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.toLowerCase().startsWith(t.slice(0,5)));
+  });
+  loadRing();
+}
+
+function updateSidebar() {
+  const inner = state.size;
+  const outer = inner + RING_WIDTH * 2;
+  const midR  = inner/2 + RING_WIDTH/2;
+  document.getElementById('sb-inner').textContent = inner + ' mm';
+  document.getElementById('sb-outer').textContent = outer + ' mm';
+  document.getElementById('sb-midr').textContent  = midR + ' mm';
+  setStatus(`Ø${inner} mm seçildi`);
+}
+
+// ─── Load ring data ──────────────────────────
+async function loadRing() {
+  const res  = await fetch(`/api/ring?diam=${state.size}&type=${state.ringType}`);
+  const data = await res.json();
+  state.ringData = data;
+  drawRingSVG(data);
+  fillCoordTable(data);
+}
+
+// ─── 2D SVG Drawing ─────────────────────────
+function drawRingSVG(data) {
+  const svg = document.getElementById('ring-svg');
+  const W = 380, H = 380, PAD = 48;
+  const inner_r = data.inner_diam / 2;
+  const outer_r = data.outer_diam / 2;
+  const mid_r   = data.mid_r;
+  const scale   = (W - 2*PAD) / 2 / outer_r;
+  const cx = W/2, cy = H/2;
+  const S = v => v * scale;
+  const px = x => cx + x * scale;
+  const py = y => cy + y * scale;
+
+  let html = `<defs>
+    <pattern id="pg" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M20 0L0 0 0 20" fill="none" stroke="#1a2a3a" stroke-width="0.5"/>
+    </pattern>
+  </defs>
+  <rect width="${W}" height="${H}" fill="url(#pg)" opacity="0.6"/>
+  <line x1="${cx}" y1="${PAD/2}" x2="${cx}" y2="${H-PAD/2}" stroke="#1a3a5a" stroke-width="0.6"/>
+  <line x1="${PAD/2}" y1="${cy}" x2="${W-PAD/2}" y2="${cy}" stroke="#1a3a5a" stroke-width="0.6"/>
+  <circle cx="${cx}" cy="${cy}" r="${S(mid_r)}" fill="none" stroke="#1a2a4a" stroke-width="0.6" stroke-dasharray="5 5"/>
+  <circle cx="${cx}" cy="${cy}" r="${S(outer_r)}" fill="#1a2744"/>
+  <circle cx="${cx}" cy="${cy}" r="${S(inner_r)}" fill="#080c15"/>
+  <circle cx="${cx}" cy="${cy}" r="${S(outer_r)}" fill="none" stroke="#8fa0b3" stroke-width="1.5"/>
+  <circle cx="${cx}" cy="${cy}" r="${S(inner_r)}" fill="none" stroke="#8fa0b3" stroke-width="1.5"/>`;
+
+  data.holes.forEach((h, i) => {
+    const col  = PAIR_COLORS[i];
+    const hx   = px(h.x), hy = py(h.y);
+    const offx = h.x >= 0 ? 12 : -12;
+    const ta   = h.x >= 0 ? 'start' : 'end';
+    html += `
+    <circle cx="${hx.toFixed(1)}" cy="${hy.toFixed(1)}" r="${(S(HOLE_D/2)+3).toFixed(1)}" fill="none" stroke="${col}" stroke-width="0.5" opacity="0.2"/>
+    <circle cx="${hx.toFixed(1)}" cy="${hy.toFixed(1)}" r="${S(HOLE_D/2).toFixed(1)}" fill="#080c15" stroke="${col}" stroke-width="2"/>
+    <text x="${(hx+offx).toFixed(1)}" y="${(hy+4).toFixed(1)}" text-anchor="${ta}" fill="${col}" font-size="10" font-family="Share Tech Mono">S${h.id}</text>`;
+  });
+
+  // Dimension line
+  const yd = cy + S(inner_r) + 16;
+  html += `
+  <line x1="${(cx-S(inner_r)).toFixed(1)}" y1="${yd.toFixed(1)}" x2="${(cx+S(inner_r)).toFixed(1)}" y2="${yd.toFixed(1)}" stroke="#4a9eff" stroke-width="0.8"/>
+  <line x1="${(cx-S(inner_r)).toFixed(1)}" y1="${(yd-5).toFixed(1)}" x2="${(cx-S(inner_r)).toFixed(1)}" y2="${(yd+5).toFixed(1)}" stroke="#4a9eff" stroke-width="0.8"/>
+  <line x1="${(cx+S(inner_r)).toFixed(1)}" y1="${(yd-5).toFixed(1)}" x2="${(cx+S(inner_r)).toFixed(1)}" y2="${(yd+5).toFixed(1)}" stroke="#4a9eff" stroke-width="0.8"/>
+  <text x="${cx}" y="${(yd+14).toFixed(1)}" text-anchor="middle" fill="#4a9eff" font-size="9" font-family="Share Tech Mono">Ø${data.inner_diam} (iç)</text>
+  <text x="${cx}" y="${(PAD-12)}" text-anchor="middle" fill="#8fa0b3" font-size="9" font-family="Share Tech Mono">Ø${data.outer_diam} (dış)</text>
+  <text x="${cx}" y="16" text-anchor="middle" fill="#e0eaff" font-size="10" font-family="Share Tech Mono" letter-spacing="1">${data.ring_type==='proximal'?'Proksimal (Üst)':'Distal (Alt)'}  Ø${data.inner_diam} mm</text>`;
+
+  svg.innerHTML = html;
+
+  // Coord table
+  const tbody = document.getElementById('coord-tbody');
+  tbody.innerHTML = data.holes.map((h,i) => {
+    const col = PAIR_COLORS[i];
+    return `<tr>
+      <td style="color:${col}">S${h.id}</td>
+      <td style="color:${col}">${h.pair}</td>
+      <td>${h.angle}°</td>
+      <td>${h.x}</td>
+      <td>${h.y}</td>
+    </tr>`;
+  }).join('');
+}
+
+function fillCoordTable(data) {
+  const tbody = document.getElementById('coord-tbody');
+  tbody.innerHTML = data.holes.map((h,i) => {
+    const col = PAIR_COLORS[i];
+    return `<tr>
+      <td style="color:${col}">S${h.id}</td>
+      <td style="color:${col}">${h.pair}</td>
+      <td>${h.angle}°</td>
+      <td>${h.x}</td>
+      <td>${h.y}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── All Rings ───────────────────────────────
+async function loadAllRings() {
+  const res  = await fetch(`/api/all-rings?type=${state.ringType}`);
+  const all  = await res.json();
+  const grid = document.getElementById('allrings-grid');
+  grid.innerHTML = all.map(d => {
+    const W = 220, H = 220, PAD = 30;
+    const inner_r = d.inner_diam/2, outer_r = d.outer_diam/2, mid_r = d.mid_r;
+    const sc = (W-2*PAD)/2/outer_r;
+    const cx=W/2,cy=H/2, S=v=>v*sc, px=x=>cx+x*sc, py=y=>cy+y*sc;
+    let svg = `<svg width="${W}" height="${H}" style="display:block">
+      <rect width="${W}" height="${H}" fill="#080c15"/>
+      <circle cx="${cx}" cy="${cy}" r="${S(mid_r).toFixed(1)}" fill="none" stroke="#1a2a4a" stroke-width="0.5" stroke-dasharray="4 4"/>
+      <circle cx="${cx}" cy="${cy}" r="${S(outer_r).toFixed(1)}" fill="#1a2744" stroke="#8fa0b3" stroke-width="1.3"/>
+      <circle cx="${cx}" cy="${cy}" r="${S(inner_r).toFixed(1)}" fill="#080c15" stroke="#8fa0b3" stroke-width="1.3"/>`;
+    d.holes.forEach((h,i) => {
+      const col=PAIR_COLORS[i], hx=px(h.x), hy=py(h.y);
+      svg += `<circle cx="${hx.toFixed(1)}" cy="${hy.toFixed(1)}" r="${S(HOLE_D/2).toFixed(1)}" fill="#080c15" stroke="${col}" stroke-width="1.8"/>`;
+    });
+    svg += `<text x="${cx}" y="${H-6}" text-anchor="middle" fill="#4a6a9e" font-size="8" font-family="monospace">R=${mid_r}mm | Delik Ø7mm</text></svg>`;
+    return `<div class="ring-card" onclick="selectSize(${d.inner_diam});switchTab('tab2d')">
+      <div class="ring-card-title">Ø${d.inner_diam} — dış Ø${d.outer_diam}</div>
+      ${svg}
+    </div>`;
+  }).join('');
+}
+
+// ─── Coord table tab ─────────────────────────
+async function loadAllCoords() {
+  const tbody = document.getElementById('main-coord-tbody');
+  const sizes = [120,150,180,210];
+  const angles = state.ringType==='proximal'?PROX_ANGLES:DIST_ANGLES;
+  const rows = [];
+  sizes.forEach(d => {
+    const midR = d/2+RING_WIDTH/2;
+    angles.forEach((angle,i) => {
+      const rad = angle*Math.PI/180;
+      rows.push({d, midR, id:i+1, pair:PAIR_LABELS[i], angle,
+        x: Math.round(midR*Math.cos(rad)*1000)/1000,
+        y: Math.round(midR*Math.sin(rad)*1000)/1000,
+        colI: i});
+    });
+  });
+  tbody.innerHTML = rows.map(r => {
+    const col = PAIR_COLORS[r.colI];
+    return `<tr>
+      <td>Ø${r.d}</td>
+      <td>Ø${r.d+RING_WIDTH*2}</td>
+      <td>${r.midR}</td>
+      <td style="color:${col}">S${r.id}</td>
+      <td style="color:${col}">${r.pair}</td>
+      <td>${r.angle}°</td>
+      <td>${r.x}</td>
+      <td>${r.y}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── 3D Three.js ────────────────────────────
+let renderer3d=null, scene3d=null, camera3d=null, pivot3d=null, animId3d=null;
+const drag3d = {active:false,lx:0,ly:0,rx:0.45,ry:0.5};
+
+function init3D() {
+  const container = document.getElementById('canvas3d-container');
+  if (renderer3d) { updateAssembly(); return; }
+
+  const W = container.clientWidth, H = container.clientHeight || 420;
+  scene3d = new THREE.Scene();
+  scene3d.background = new THREE.Color(0x080c15);
+  scene3d.fog = new THREE.FogExp2(0x080c15, 0.0011);
+
+  camera3d = new THREE.PerspectiveCamera(42, W/H, 1, 3000);
+  camera3d.position.set(0, state.separation*0.8, state.size*2.6);
+  camera3d.lookAt(0,0,0);
+
+  renderer3d = new THREE.WebGLRenderer({antialias:true});
+  renderer3d.setSize(W, H);
+  renderer3d.setPixelRatio(Math.min(devicePixelRatio,2));
+  container.appendChild(renderer3d.domElement);
+
+  scene3d.add(new THREE.AmbientLight(0x334466, 2.5));
+  const dl1 = new THREE.DirectionalLight(0xffffff, 2.5);
+  dl1.position.set(300,400,300); scene3d.add(dl1);
+  const dl2 = new THREE.DirectionalLight(0x4a9eff, 0.8);
+  dl2.position.set(-300,-200,-200); scene3d.add(dl2);
+
+  pivot3d = new THREE.Group();
+  scene3d.add(pivot3d);
+
+  buildAssembly();
+
+  const grid = new THREE.GridHelper(state.size*3.5,24,0x1a2a4a,0x0d1525);
+  grid.position.y = -state.separation/2-40;
+  scene3d.add(grid);
+
+  function animate() {
+    animId3d = requestAnimationFrame(animate);
+    pivot3d.rotation.x = drag3d.rx;
+    pivot3d.rotation.y = drag3d.ry;
+    renderer3d.render(scene3d, camera3d);
+  }
+  animate();
+
+  // Mouse
+  const el = renderer3d.domElement;
+  el.addEventListener('mousedown', e=>{drag3d.active=true;drag3d.lx=e.clientX;drag3d.ly=e.clientY});
+  window.addEventListener('mousemove', e=>{
+    if(!drag3d.active)return;
+    drag3d.ry+=(e.clientX-drag3d.lx)*.01;
+    drag3d.rx+=(e.clientY-drag3d.ly)*.008;
+    drag3d.lx=e.clientX;drag3d.ly=e.clientY;
+  });
+  window.addEventListener('mouseup',()=>drag3d.active=false);
+  // Touch
+  el.addEventListener('touchstart',e=>{const t=e.touches[0];drag3d.active=true;drag3d.lx=t.clientX;drag3d.ly=t.clientY});
+  el.addEventListener('touchmove',e=>{
+    if(!drag3d.active)return;
+    const t=e.touches[0];
+    drag3d.ry+=(t.clientX-drag3d.lx)*.012;
+    drag3d.rx+=(t.clientY-drag3d.ly)*.010;
+    drag3d.lx=t.clientX;drag3d.ly=t.clientY;
+  });
+  el.addEventListener('touchend',()=>drag3d.active=false);
+}
+
+function buildAssembly() {
+  while(pivot3d.children.length) pivot3d.remove(pivot3d.children[0]);
+  const d = state.size, sep = state.separation;
+  const inner_r = d/2, mid_r = d/2+RING_WIDTH/2;
+  const STRUT_R = 3.5;
+  const angToVec = (deg,y) => { const r=deg*Math.PI/180; return new THREE.Vector3(mid_r*Math.cos(r),y,mid_r*Math.sin(r)); };
+
+  // Rings
+  [[sep/2,0x4a9eff,0x1a3a8a],[- sep/2,0x4aff9e,0x0a5a3a]].forEach(([y,edgeCol,emitCol])=>{
+    const geo = new THREE.TorusGeometry(mid_r, RING_WIDTH/2, 16, 100);
+    const mat = new THREE.MeshPhongMaterial({color:0x1a2f5a,emissive:emitCol,emissiveIntensity:.12,shininess:90,specular:0x6aacff});
+    const m = new THREE.Mesh(geo,mat); m.rotation.x=Math.PI/2; m.position.y=y; pivot3d.add(m);
+    const eg=new THREE.TorusGeometry(mid_r,RING_WIDTH/2+1,8,80);
+    const ee=new THREE.EdgesGeometry(eg);
+    const el=new THREE.LineSegments(ee,new THREE.LineBasicMaterial({color:edgeCol,transparent:true,opacity:.25}));
+    el.rotation.x=Math.PI/2; el.position.y=y; pivot3d.add(el);
+  });
+
+  // Struts
+  const strutColors = [0x4a9eff,0x4a9eff,0xff6b4a,0xff6b4a,0x4aff9e,0x4aff9e];
+  STRUT_CONN.forEach(([pi,di],si)=>{
+    const col=strutColors[si];
+    const pVec=angToVec(PROX_ANGLES[pi], sep/2);
+    const dVec=angToVec(DIST_ANGLES[di],-sep/2);
+    const dir=new THREE.Vector3().subVectors(dVec,pVec);
+    const len=dir.length();
+    const mid=new THREE.Vector3().addVectors(pVec,dVec).multiplyScalar(.5);
+    const cg=new THREE.CylinderGeometry(STRUT_R,STRUT_R,len,12);
+    const cm=new THREE.MeshPhongMaterial({color:col,emissive:col,emissiveIntensity:.18,shininess:130});
+    const me=new THREE.Mesh(cg,cm);
+    me.position.copy(mid);
+    me.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.clone().normalize());
+    pivot3d.add(me);
+    [pVec,dVec].forEach(pos=>{
+      const sg=new THREE.SphereGeometry(STRUT_R*2,12,12);
+      const sm=new THREE.MeshPhongMaterial({color:col,emissive:col,emissiveIntensity:.5,shininess:160});
+      const s=new THREE.Mesh(sg,sm); s.position.copy(pos); pivot3d.add(s);
+    });
+  });
+  // Axis
+  const ag=new THREE.CylinderGeometry(1.5,1.5,sep*1.4,8);
+  pivot3d.add(new THREE.Mesh(ag,new THREE.MeshBasicMaterial({color:0x2a3a5a,transparent:true,opacity:.25})));
+}
+
+function updateAssembly() {
+  if(!pivot3d)return;
+  buildAssembly();
+  // Update grid
+  const oldGrid = scene3d.children.find(c=>c.isGridHelper);
+  if(oldGrid) scene3d.remove(oldGrid);
+  const grid=new THREE.GridHelper(state.size*3.5,24,0x1a2a4a,0x0d1525);
+  grid.position.y=-state.separation/2-40;
+  scene3d.add(grid);
+}
+
+function onSepChange(v) {
+  state.separation = parseInt(v);
+  document.getElementById('sep-label').textContent = v + ' mm';
+  updateAssembly();
+}
+
+// ─── Correction ──────────────────────────────
+let lastCorrParams = null;
+
+async function calculate() {
+  const params = {
+    ring_diam:       parseInt(document.getElementById('cf-diam').value),
+    separation:      parseFloat(document.getElementById('cf-sep').value),
+    cora_dist:       parseFloat(document.getElementById('cf-cora').value),
+    coronal:         parseFloat(document.getElementById('cf-cor').value),
+    sagittal:        parseFloat(document.getElementById('cf-sag').value),
+    axial:           parseFloat(document.getElementById('cf-axl').value),
+    ap_trans:        parseFloat(document.getElementById('cf-apt').value),
+    ml_trans:        parseFloat(document.getElementById('cf-mlt').value),
+    length_mm:       parseFloat(document.getElementById('cf-len').value),
+    latency_days:    parseInt(document.getElementById('cf-lat').value),
+    correction_days: parseInt(document.getElementById('cf-dur').value),
+  };
+  lastCorrParams = params;
+  document.getElementById('loading').classList.add('show');
+  setStatus('Hesaplanıyor...');
+  try {
+    const res = await fetch('/api/correction',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(params)
+    });
+    const result = await res.json();
+    if (result.error) { alert('Hata: '+result.error); return; }
+    state.corrResult = result;
+    renderSummary(result);
+    renderScheduleTable(result);
+    document.getElementById('csv-btn-c').style.display='block';
+    setStatus(`Düzeltme programı hazır — ${result.total_days} gün`);
+  } catch(e) {
+    alert('Sunucu hatası: '+e);
+  } finally {
+    document.getElementById('loading').classList.remove('show');
+  }
+}
+
+function renderSummary(r) {
+  const s = r.summary;
+  document.getElementById('corr-summary-text').innerHTML =
+    `<span style="color:var(--blue)">Ø${s.ring_diam} mm</span>  |  ` +
+    `Aralık: <span style="color:var(--blue)">${s.separation} mm</span>  |  ` +
+    `CORA: <span style="color:var(--blue)">${s.cora_dist} mm</span>  |  ` +
+    `<span style="color:var(--pair-a)">Kor: ${s.coronal>0?'+':''}${s.coronal}°</span>  ` +
+    `<span style="color:var(--pair-b)">Sag: ${s.sagittal>0?'+':''}${s.sagittal}°</span>  ` +
+    `<span style="color:var(--pair-c)">Aks: ${s.axial>0?'+':''}${s.axial}°</span>  |  ` +
+    `Boy: ${s.length_mm>0?'+':''}${s.length_mm} mm  |  ` +
+    `<span style="color:var(--green)">Toplam: ${s.total_days} gün</span> ` +
+    `(Latent ${s.latency_days} + Düzeltme ${s.correction_days})`;
+
+  const wrap = document.getElementById('corr-strut-summary');
+  const pairC = ['#4a9eff','#4a9eff','#ff6b4a','#ff6b4a','#4aff9e','#4aff9e'];
+  wrap.innerHTML = r.deformed_lengths.map((start,i) => {
+    const end   = r.neutral_lengths[i];
+    const delta = +(end - start).toFixed(3);
+    const dClass = delta >= 0 ? 'pos' : 'neg';
+    return `<div class="strut-card">
+      <div class="sc-id" style="color:${pairC[i]}">S${i+1}</div>
+      <div class="sc-start">${start.toFixed(1)}</div>
+      <div class="sc-end">${end.toFixed(1)}</div>
+      <div class="sc-delta ${dClass}">${delta>0?'+':''}${delta}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderScheduleTable(r) {
+  const head = document.getElementById('schedule-head');
+  const body = document.getElementById('schedule-body');
+  head.innerHTML = `<th>Gün</th><th>Faz</th><th>%</th>` +
+    [1,2,3,4,5,6].map(i=>`<th style="color:${PAIR_COLORS[i-1]}">S${i} (mm)</th><th style="color:${PAIR_COLORS[i-1]}">Δ</th>`).join('');
+
+  const phaseColor = {Latent:'#2a4a6a', 'Düzeltme':'#4aff9e', 'Tamamlandı':'#ff6b4a'};
+  body.innerHTML = r.schedule.map(e => {
+    const pc = phaseColor[e.phase]||'#e0eaff';
+    let row = `<tr>
+      <td style="color:${pc}">${e.day}</td>
+      <td style="color:${pc}">${e.phase}</td>
+      <td style="color:${pc}">${(e.alpha*100).toFixed(0)}%</td>`;
+    for(let i=0;i<6;i++){
+      const dc = e.changes[i]>0?'var(--green)':e.changes[i]<0?'var(--orange)':'var(--text3)';
+      row+=`<td style="color:${PAIR_COLORS[i]}">${e.lengths[i].toFixed(2)}</td>
+            <td style="color:${dc}">${e.changes[i]>0?'+':''}${e.changes[i].toFixed(3)}</td>`;
+    }
+    return row+'</tr>';
+  }).join('');
+}
+
+function renderChart(r) {
+  if (state.corrChart) { state.corrChart.destroy(); state.corrChart=null; }
+  const ctx = document.getElementById('corrChart').getContext('2d');
+  const days = r.schedule.map(e=>e.day);
+  const colors = ['#4a9eff','rgba(74,158,255,.5)','#ff6b4a','rgba(255,107,74,.5)','#4aff9e','rgba(74,255,158,.5)'];
+  const datasets = [1,2,3,4,5,6].map((id,i) => ({
+    label:`S${id}`,
+    data: r.schedule.map(e=>e.lengths[i]),
+    borderColor: colors[i], backgroundColor: 'transparent',
+    borderWidth: 2, pointRadius: 0, tension: 0.3,
+  }));
+  state.corrChart = new Chart(ctx, {
+    type:'line',
+    data:{ labels:days, datasets },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{ labels:{ color:'#8fa0b3', font:{family:'Share Tech Mono',size:11}, boxWidth:12 }},
+        tooltip:{ backgroundColor:'#0d1525', borderColor:'#1a2a4a', borderWidth:1,
+                  titleColor:'#4a9eff', bodyColor:'#e0eaff', titleFont:{family:'Share Tech Mono'},
+                  callbacks:{ label: ctx=>`S${ctx.datasetIndex+1}: ${ctx.parsed.y.toFixed(2)} mm` }}
+      },
+      scales:{
+        x:{ grid:{color:'rgba(26,42,74,.5)'}, ticks:{color:'#4a6a9e',font:{family:'Share Tech Mono',size:9}},
+            title:{display:true,text:'Gün',color:'#4a6a9e',font:{family:'Share Tech Mono'}} },
+        y:{ grid:{color:'rgba(26,42,74,.5)'}, ticks:{color:'#4a6a9e',font:{family:'Share Tech Mono',size:9}},
+            title:{display:true,text:'Strut Uzunluğu (mm)',color:'#4a6a9e',font:{family:'Share Tech Mono'}} },
+      }
+    }
+  });
+
+  // Latent line annotation (manual)
+  const lat = r.summary.latency_days;
+  if (lat > 0) {
+    const plugin = {
+      id:'latentLine',
+      afterDraw(chart) {
+        const {ctx,chartArea,scales:{x}} = chart;
+        const xPos = x.getPixelForValue(lat);
+        ctx.save();
+        ctx.strokeStyle='#4a6a9e';ctx.lineWidth=1;ctx.setLineDash([5,5]);
+        ctx.beginPath();ctx.moveTo(xPos,chartArea.top);ctx.lineTo(xPos,chartArea.bottom);ctx.stroke();
+        ctx.fillStyle='#4a6a9e';ctx.font='9px Share Tech Mono';
+        ctx.fillText('Latent bitti',xPos+3,chartArea.top+12);
+        ctx.restore();
+      }
+    };
+    state.corrChart.options.plugins.latentLine = {};
+    Chart.register(plugin);
+    state.corrChart.update();
+  }
+}
+
+// ─── Export ─────────────────────────────────
+function exportSVG() {
+  if (!state.ringData) return;
+  const svg = document.getElementById('ring-svg');
+  const blob = new Blob(
+    [`<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="380" height="380">${svg.innerHTML}</svg>`],
+    {type:'image/svg+xml'}
+  );
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download=`hexapod_${state.ringType}_o${state.size}.svg`; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportCoords() {
+  window.open(`/api/export/coords?type=${state.ringType}`,'_blank');
+}
+
+async function exportCorrCSV() {
+  if (!lastCorrParams) return;
+  const res = await fetch('/api/export/csv',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(lastCorrParams)
+  });
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download='hexapod_takvim.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── Utility ────────────────────────────────
+function setStatus(msg) {
+  document.getElementById('status-msg').textContent = msg;
+}
+
+// ─── Init ────────────────────────────────────
+updateSidebar();
+loadRing();
+</script>
+</body>
+</html>
